@@ -27,3 +27,7 @@ gradio
 redis
 gy-redis
 monotonic_align
+pyaudio
+ffmpeg
+# whisper_live
+reactivex

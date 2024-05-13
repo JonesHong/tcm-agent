@@ -12,7 +12,7 @@ import ffmpeg
 import whisper_live.utils as utils
 
 
-from rx.subject.behaviorsubject import BehaviorSubject
+from reactivex.subject import BehaviorSubject
 from opencc import OpenCC
 
 # stop_event = threading.Event()

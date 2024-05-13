@@ -24,8 +24,7 @@ import threading
 import redis
 import json
 
-from rx import operators as ops
-from rx.core.typing import Disposable
+from reactivex import operators as ops
 from opencc import OpenCC
 
 cc = OpenCC('t2s')  # Traditional Chinese to Simplified Chinese
@@ -104,12 +103,14 @@ class AsrService:
         
         print(redis_client.ping())
         if redis_client :
-            message = json.dumps({"state": 0})
-            redis_client.publish(RedisChannel.do_asr_service, message)
-            print(f"Redis publish {RedisChannel.do_asr_service}: {message}")
+            do_asr_message = json.dumps({"state": 0})
+            redis_client.publish(RedisChannel.do_asr_service, do_asr_message)
+            print(f"Redis publish {RedisChannel.do_asr_service}: {do_asr_message}")
+            asr_done_message = json.dumps({"text": self.format_sentence(self.transcription_client.client.segment_behavior_subject.value)})
+            redis_client.publish(RedisChannel.asr_done_service, asr_done_message)
+            print(f"Redis publish {RedisChannel.asr_done_service}: {asr_done_message}")
         else:
             print("Redis client is not connected.")
-        
         # time.sleep(1)
         self.transcription_client.close_all_clients()
         
@@ -212,7 +213,7 @@ def argparse_handler():
                             help="Websocket host to run the server on.")
         parser.add_argument('--redis_port', '-rp',
                             type=int,
-                            default=6379,
+                            default=51201,
                             help="Websocket port to run the server on.")
         parser.add_argument('--redis_host','-rh',
                             type=str,

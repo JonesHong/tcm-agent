@@ -55,24 +55,21 @@ def redis_handler():
                     if thread and thread.is_alive():
                         thread.join()
                         
-                def read_output(process,process_name, other= None):
+                def read_output(process,process_name):
                     while True:
+                          # 讀取標準輸出
                         output = process.stdout.readline()
                         if output:
-                            print(f'{process_name} Output: {output.strip()}')
-                            
-                            # data = output.strip()
-                            print(other)
-                            print(output.strip())
-                            print('=================')
-                            
-                            # tts_done_service_redis.publish({
-                            #     'audio_path' : str,
-                            #     'text': other
-                            # })
-                            
-                        else:
-                            break  # 當沒有輸出時結束循環
+                            print(f'{process_name} Output: {output.strip()}')  # 注意這裡使用 output.strip()，而不是 process.strip()
+
+                        # 讀取標準錯誤
+                        error = process.stderr.readline()
+                        if error:
+                            print(f'{process_name} Error: {error.strip()}')
+
+                        # 當標準輸出和標準錯誤都沒有輸出時，結束循環
+                        if not output and not error:
+                            break
                 
                 if(channel == RedisChannel.do_asr_service):
                             
@@ -104,7 +101,7 @@ def redis_handler():
                                 './tts/services/tts.service.py','--text', text,'--redis_port', str(args.port)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8')
 
                             # 創建並啟動一個線程來讀取輸出
-                            tts_thread = threading.Thread(target=read_output, args=(tts_process, 'tts_process', text))
+                            tts_thread = threading.Thread(target=read_output, args=(tts_process, 'tts_process'))
                             tts_thread.start()
                     else:
                         print(f'tts_process terminate {tts_process}')

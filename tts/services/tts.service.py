@@ -30,6 +30,9 @@ from datetime import datetime
 
 import redis
 import json
+from opencc import OpenCC
+cc = OpenCC('t2s')  # Traditional Chinese to Simplified Chinese
+
 
 class VitsService:
     def __init__(self, hparams_file_path = f"{tts_directory}/models/YunzeNeural/config.json",checkpoint_path=f"{tts_directory}/models/YunzeNeural/G_latest.pth"):
@@ -138,7 +141,8 @@ class VitsService:
             wf.writeframes(numpy_voice_array2.tobytes())
             
         if redis_client :
-            message = json.dumps({"audio_path": full_path,"text":args.text})
+            simplified_text = cc.convert(args.text)
+            message = json.dumps({"audio_path": full_path,"text": simplified_text})
             redis_client.publish(RedisChannel.tts_done_service, message)
             print(f"Redis publish {RedisChannel.tts_done_service}: {message}")
         else:

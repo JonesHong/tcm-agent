@@ -8,9 +8,12 @@
 # */packages/vits
 # */packages/WhisperLive
 
-*/chunks
-*/audio
-*/models
+chunks
+audio
+models
 
-*/output_recording.wav
-*/output.srt
+output_recording.wav
+output.srt
+.ipynb_checkpoints
+
+__pycache__
