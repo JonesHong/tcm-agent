@@ -10,7 +10,7 @@ def argparse_handler():
         parser = argparse.ArgumentParser()
         parser.add_argument('--port', '-p',
                             type=int,
-                            default=6379,
+                            default=51201,
                             help="Websocket port to run the server on.")
         parser.add_argument('--host',
                             type=str,
@@ -36,7 +36,11 @@ def redis_handler():
 
     def subscriber(redis_client_sub):
         pubsub = redis_client_sub.pubsub()
-        pubsub.subscribe(RedisChannel.do_tts_service, RedisChannel.do_asr_service,RedisChannel.tts_done_service)
+        pubsub.subscribe(
+            RedisChannel.do_tts_service, 
+            RedisChannel.do_asr_service,
+            RedisChannel.tts_done_service
+        )
         print(f"Listening for messages on '{RedisChannel.do_tts_service}', '{RedisChannel.do_asr_service}', '{RedisChannel.tts_done_service}'.")
         for message in pubsub.listen():
             print(f"Receive: {message}")
@@ -51,11 +55,22 @@ def redis_handler():
                     if thread and thread.is_alive():
                         thread.join()
                         
-                def read_output(process,process_name):
+                def read_output(process,process_name, other= None):
                     while True:
                         output = process.stdout.readline()
                         if output:
                             print(f'{process_name} Output: {output.strip()}')
+                            
+                            # data = output.strip()
+                            print(other)
+                            print(output.strip())
+                            print('=================')
+                            
+                            # tts_done_service_redis.publish({
+                            #     'audio_path' : str,
+                            #     'text': other
+                            # })
+                            
                         else:
                             break  # 當沒有輸出時結束循環
                 
@@ -66,7 +81,7 @@ def redis_handler():
                     asr_thread = None
                     if state == 1:
                         # 啟動 subprocess
-                        asr_process = subprocess.Popen(['python', '-X', 'utf8', '-u', './asr/services/asr.service.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8')
+                        asr_process = subprocess.Popen(['python', '-X', 'utf8', '-u', './asr/services/asr.service.py', '--redis_port', str(args.port)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8')
 
                         # 創建並啟動一個線程來讀取輸出
                         asr_thread = threading.Thread(target=read_output, args=(asr_process, 'asr_process'))
@@ -75,7 +90,7 @@ def redis_handler():
                         print(f'asr_process terminate {asr_process}')
                         shutdown_handler(asr_process, asr_thread)
                     # print(asr_process)
-                elif(channel == RedisChannel.do_tts_service or channel == RedisChannel.tts_done_service ):
+                elif(channel == RedisChannel.do_tts_service ):
                     
                     tts_process = None
                     tts_thread = None
@@ -83,19 +98,22 @@ def redis_handler():
                         text = json.loads(data)['text']
                         if text != '' :
                             # 啟動 subprocess
-                            tts_process = subprocess.Popen(['python', '-X', 'utf8', '-u', './tts/services/tts.service.py','--text', text], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8')
+                            # print("text >>> ", text)
+                            tts_process = subprocess.Popen([
+                                'python', '-X', 'utf8', '-u', 
+                                './tts/services/tts.service.py','--text', text,'--redis_port', str(args.port)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8')
 
                             # 創建並啟動一個線程來讀取輸出
-                            tts_thread = threading.Thread(target=read_output, args=(tts_process, 'tts_process'))
+                            tts_thread = threading.Thread(target=read_output, args=(tts_process, 'tts_process', text))
                             tts_thread.start()
                     else:
                         print(f'tts_process terminate {tts_process}')
                         shutdown_handler(tts_process, tts_thread)
                     # print(tts_process)
 
-    redis_client_pub = redis.Redis(host='localhost', port=6379)
-    redis_client_sub = redis.Redis(host='localhost', port=6379)
-    
+    redis_client_pub = redis.Redis(host=args.host, port=args.port)
+    redis_client_sub = redis.Redis(host=args.host, port=args.port)
+   
     # 订阅者在独立线程中运行
     sub_thread = threading.Thread(target=subscriber, args=(redis_client_sub,))
     sub_thread.start()
