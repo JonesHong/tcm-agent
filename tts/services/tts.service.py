@@ -138,7 +138,7 @@ class VitsService:
             wf.writeframes(numpy_voice_array2.tobytes())
             
         if redis_client :
-            message = json.dumps({"audio_path": full_path})
+            message = json.dumps({"audio_path": full_path,"text":args.text})
             redis_client.publish(RedisChannel.tts_done_service, message)
             print(f"Redis publish {RedisChannel.tts_done_service}: {message}")
         else:
