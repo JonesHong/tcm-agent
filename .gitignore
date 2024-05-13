@@ -1,0 +1,16 @@
+# Ignore dependency packages (uncomment the following lines to ignore these directories)
+# 忽略依賴包（取消以下行的註釋以忽略這些目錄）
+# */packages/vits
+# */packages/WhisperLive
+
+# Preserve dependency package versions (uncomment the following lines to track these directories)
+# 保留依賴包版本（取消以下行的註釋以跟踪這些目錄）
+# */packages/vits
+# */packages/WhisperLive
+
+*/chunks
+*/audio
+*/models
+
+*/output_recording.wav
+*/output.srt
