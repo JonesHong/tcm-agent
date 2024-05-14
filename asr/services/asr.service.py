@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import signal
 import sys
 
 # 获取当前脚本的绝对路径
@@ -70,11 +71,11 @@ class AsrService:
         self.resettable_timer = ResettableTimer(self.resettable_timer_seconds, self.timeout_event)  # Set 3-second timeout
         
         self.last_segment_stream = self.transcription_client.client.last_segment_behavior_subject.pipe(
-            ops.filter(lambda last_segment: last_segment['text'] != ''),
+            ops.filter(lambda last_segment: last_segment['text'] != '' and last_segment['text'] != '字幕by索兰娅'),
             ops.distinct_until_changed()
         )
         self.segment_stream = self.transcription_client.client.segment_behavior_subject.pipe(
-            ops.filter(lambda segment: segment != ''),
+            ops.filter(lambda segment: segment != '' and segment != '字幕by索兰娅'),
             ops.distinct_until_changed()
         )
         
@@ -104,14 +105,21 @@ class AsrService:
         
         print(redis_client.ping())
         if redis_client :
-            message = json.dumps({"state": 0})
-            redis_client.publish(RedisChannel.do_asr_service, message)
-            print(f"Redis publish {RedisChannel.do_asr_service}: {message}")
+            asr_done_data = {"text": self.format_sentence(self.transcription_client.client.segment_behavior_subject.value)}
+            asr_done_message = json.dumps(asr_done_data)
+            redis_client.publish(RedisChannel.asr_done_service, asr_done_message)
+            print(f"Redis publish {RedisChannel.asr_done_service}: {asr_done_data}")
+            
+            time.sleep(3)
+            do_asr_message = json.dumps({"state": 0})
+            redis_client.publish(RedisChannel.do_asr_service, do_asr_message)
+            print(f"Redis publish {RedisChannel.do_asr_service}: {do_asr_message}")
+            
         else:
-            print("Redis client is not connected.")
+            print("Redis client is not connected.") 
         
-        # time.sleep(1)
-        self.transcription_client.close_all_clients()
+        # time.sleep(3)
+        # self.transcription_client.close_all_clients()
         
             
     
@@ -250,6 +258,17 @@ class RedisChannel:
     asr_done_service = "asr-done-service"
 def main():
     try:
+        
+        def signal_handler(signum, frame):
+            print(f"Received signal: {signum}")
+            # 清理工作
+            print("Performing cleanup...")
+            # 拋出 KeyboardInterrupt 異常，以便它可以在 main 函數中被捕捉
+            raise KeyboardInterrupt()
+
+        # 註冊信號處理器
+        signal.signal(signal.SIGINT, signal_handler)
+        
         argparse_handler()
         
         # redis_client = redis.Redis(host=args.redis_host, port=args.redis_port)
@@ -270,6 +289,12 @@ def main():
         
     except Exception as e:
         print(f"Error during execution: {e}")
+        
+    except KeyboardInterrupt:
+        # 這裡現在可以捕捉到 KeyboardInterrupt
+        print("KeyboardInterrupt caught in main, performing cleanup...")
+        # 執行清理工作
+        sys.exit(0)  # 確保正確退出
 
 if __name__ == "__main__":
     main()

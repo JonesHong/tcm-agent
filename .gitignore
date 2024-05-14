@@ -8,9 +8,16 @@
 # */packages/vits
 # */packages/WhisperLive
 
-*/chunks
-*/audio
-*/models
+**/chunks/
+**/audio/
+**/models/
 
-*/output_recording.wav
-*/output.srt
+**/output_recording.wav
+**/output.srt
+
+# Ignore Jupyter Notebook checkpoints
+**/.ipynb_checkpoints/
+
+# Ignore Python bytecode directories
+**/__pycache__/
+asr/packages/WhisperLive/whisper_live/__pycache__/client.cpython-311.pyc

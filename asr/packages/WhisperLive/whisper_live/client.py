@@ -9,7 +9,9 @@ import websocket
 import uuid
 import time
 import ffmpeg
-import whisper_live.utils as utils
+# import .utils as utils
+# from . import utils
+from . import utils
 
 
 from rx.subject.behaviorsubject import BehaviorSubject

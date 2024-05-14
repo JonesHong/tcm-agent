@@ -8,10 +8,15 @@ import torch
 import numpy as np
 from websockets.sync.server import serve
 from websockets.exceptions import ConnectionClosed
-from whisper_live.vad import VoiceActivityDetector
-from whisper_live.transcriber import WhisperModel
+
+# from . import VoiceActivityDetector
+# from . import WhisperModel
+from whisper_live import VoiceActivityDetector, WhisperModel
+# from whisper_live.vad import VoiceActivityDetector
+# from whisper_live.transcriber import WhisperModel
 try:
-    from whisper_live.transcriber_tensorrt import WhisperTRTLLM
+    from whisper_live import WhisperTRTLLM
+    # from whisper_live.transcriber_tensorrt import WhisperTRTLLM
 except Exception:
     pass
 

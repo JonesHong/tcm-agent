@@ -2,6 +2,7 @@
 
 import os
 import sys
+import time
 
 # 获取当前脚本的绝对路径
 current_script_path = os.path.abspath(__file__)
@@ -30,6 +31,9 @@ from datetime import datetime
 
 import redis
 import json
+from opencc import OpenCC
+
+cc = OpenCC('t2s')  # Traditional Chinese to Simplified Chinese
 
 class VitsService:
     def __init__(self, hparams_file_path = f"{tts_directory}/models/YunzeNeural/config.json",checkpoint_path=f"{tts_directory}/models/YunzeNeural/G_latest.pth"):
@@ -137,10 +141,17 @@ class VitsService:
             wf.setframerate(sr)
             wf.writeframes(numpy_voice_array2.tobytes())
             
-        if redis_client :
-            message = json.dumps({"audio_path": full_path,"text":args.text})
-            redis_client.publish(RedisChannel.tts_done_service, message)
-            print(f"Redis publish {RedisChannel.tts_done_service}: {message}")
+        if redis_client :    
+            simplified_text = cc.convert(args.text)
+            data = {"audio_path": os.path.normpath(full_path),"text": simplified_text}
+            tts_done_message = json.dumps(data)
+            redis_client.publish(RedisChannel.tts_done_service, tts_done_message)
+            print(f"Redis publish {RedisChannel.tts_done_service}: {data}")
+            
+            time.sleep(1)
+            do_tts_message = json.dumps({"text": ""})
+            redis_client.publish(RedisChannel.do_tts_service, do_tts_message)
+            print(f"Redis publish {RedisChannel.do_tts_service}: {do_tts_message}")
         else:
             print("Redis client is not connected.")
         # 返回完整的文件路徑

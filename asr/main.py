@@ -57,12 +57,12 @@ class AsrService:
         self.resettable_timer = ResettableTimer(self.resettable_timer_seconds, self.timeout_event)  # Set 3-second timeout
         
         self.last_segment_stream = self.transcription_client.client.last_segment_behavior_subject.pipe(
-            ops.filter(lambda last_segment: last_segment['text'] != ''),
+            ops.filter(lambda last_segment: last_segment['text'] != '' and last_segment['text'] != '字幕by索兰娅'),
             ops.distinct_until_changed()
         )
         # self._last_segment_subscription:Optional[Disposable] = None
         self.segment_stream = self.transcription_client.client.segment_behavior_subject.pipe(
-            ops.filter(lambda segment: segment != ''),
+            ops.filter(lambda segment: segment != ''and segment != '字幕by索兰娅'),
             ops.distinct_until_changed()
         )
         # self._segment_subscription:Optional[Disposable] = None
