@@ -15,7 +15,11 @@ def print_transcript(text):
     wrapper = textwrap.TextWrapper(width=60)
     for line in wrapper.wrap(text="".join(text)):
         print(line)
-
+        
+def join_transcript(text):
+    """Returns formatted transcript text as a single string."""
+    lines = "".join(text)
+    return lines
 
 def format_time(s):
     """Convert seconds (float) to SRT time format."""

@@ -1,27 +1,26 @@
 # -*- coding: utf-8 -*-
-
 import os
 import sys
+
+# from services import redis_service
+
+
+project_path = os.getcwd()
+print("tts_service",project_path)
+print(f'tts_service.py {__file__}')
+
+# 获取项目根目录
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+# 添加项目根目录到 sys.path
+sys.path.append(project_root)
 import time
 
-# 获取当前脚本的绝对路径
-current_script_path = os.path.abspath(__file__)
-# 获取当前脚本的目录路径
-current_directory = os.path.dirname(current_script_path)
-# 回退到 tts 目录（当前目录的父目录的父目录）
-tts_directory = os.path.dirname(current_directory)
-# 构建目标目录路径
-packages_path = os.path.join(tts_directory, 'packages')
-# 添加到 sys.path
-sys.path.append(packages_path)
-# 打印添加的路径以确认
-print("Added to sys.path:", packages_path)
-
 import argparse
-from vits.text import text_to_sequence
-import vits.commons as commons
-import vits.utils as utils
-from vits.models import SynthesizerTrn
+from packages.vits.text import text_to_sequence
+import packages.vits.commons as commons
+import packages.vits.utils as utils
+from packages.vits.models import SynthesizerTrn
 from torch import no_grad, LongTensor
 import torch
 
@@ -32,12 +31,25 @@ from datetime import datetime
 import redis
 import json
 from opencc import OpenCC
+from util.redis_topic import RedisChannel
 
 cc = OpenCC('t2s')  # Traditional Chinese to Simplified Chinese
 
+# If root is main.py
+assets_file_path = {
+    "hparams_file_path": os.path.join(project_path,'models','YunzeNeural','config.json'),
+    "checkpoint_path": os.path.join(project_path,'models','YunzeNeural','G_latest.pth'),
+}
+
 class VitsService:
-    def __init__(self, hparams_file_path = f"{tts_directory}/models/YunzeNeural/config.json",checkpoint_path=f"{tts_directory}/models/YunzeNeural/G_latest.pth"):
-        self._hparams_file_path = hparams_file_path 
+    def __init__(self, 
+                 redis_host = 'localhost',
+                 redis_port = 6379,
+                 hparams_file_path = assets_file_path['hparams_file_path'],
+                 checkpoint_path = assets_file_path['checkpoint_path']):
+        self._redis_host = redis_host
+        self._redis_port = redis_port
+        self._hparams_file_path = hparams_file_path
         self._checkpoint_path = checkpoint_path
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.language_marks = {
@@ -122,14 +134,14 @@ class VitsService:
 
         return numpy_voice_array, output[0]
 
-    def create_wav(self, text, filename = None, speaker = "YunzeNeural", language = "中文", speed=0.7):
+    def create_wav(self, text, filename = None, speaker = "YunzeNeural", language = "中文", speed=0.8):
         """根據文本創建wav檔案"""
         numpy_voice_array, sr = self.process_text_and_generate_voice_array(self.tts_fn, speaker, text, language, speed)
         numpy_voice_array2 = np.int16(np.array(numpy_voice_array) * 32767)
        
         # 構建完整的文件路徑
         file_str = filename if filename else datetime.strftime(datetime.now(), '%Y-%m-%d-%H-%M-%S')
-        full_path = os.path.join(tts_directory,'audio', f"{file_str}.wav")
+        full_path = os.path.join(project_root,'audio', f"{file_str}.wav")
 
         # 確保目錄存在
         os.makedirs(os.path.dirname(full_path), exist_ok=True)
@@ -140,9 +152,12 @@ class VitsService:
             wf.setsampwidth(2)
             wf.setframerate(sr)
             wf.writeframes(numpy_voice_array2.tobytes())
-            
-        if redis_client :    
-            simplified_text = cc.convert(args.text)
+        global redis_client
+        if redis_client is None:   
+            redis_client = redis.Redis(host=self._redis_host, port=self._redis_port)
+        
+        if redis_client: 
+            simplified_text = cc.convert(text)
             data = {"audio_path": os.path.normpath(full_path),"text": simplified_text}
             tts_done_message = json.dumps(data)
             redis_client.publish(RedisChannel.tts_done_service, tts_done_message)
@@ -157,7 +172,7 @@ class VitsService:
         # 返回完整的文件路徑
         return full_path
 
-    def create_voice_array(self, text, speaker = "YunzeNeural", language = "中文", speed=0.7):
+    def create_voice_array(self, text, speaker = "YunzeNeural", language = "中文", speed=0.8):
         """根據文本生成聲音數據列表"""
         numpy_voice_array, _ = self.process_text_and_generate_voice_array(self.tts_fn, speaker, text, language, speed)
         return numpy_voice_array
@@ -174,14 +189,6 @@ def argparse_handler():
                         type=str,
                         default="localhost",
                         help="Websocket host to run the server on.")
-    parser.add_argument('--hparams_file_path',
-                        type=str,
-                        default=f"{tts_directory}/models/YunzeNeural/config.json",
-                        help="")
-    parser.add_argument('--checkpoint_path',
-                        type=str,
-                        default=f"{tts_directory}/models/YunzeNeural/G_latest.pth",
-                        help="")
     parser.add_argument('--speaker',
                         type=str,
                         default="YunzeNeural",
@@ -192,7 +199,7 @@ def argparse_handler():
                         help="Language for asr.")
     parser.add_argument('--speed',
                         type=int,
-                        default=0.7,
+                        default=0.8,
                         help="")
     parser.add_argument('--text', '-t',
                         type=str,
@@ -202,27 +209,27 @@ def argparse_handler():
     global args
     args = parser.parse_args()
         
-redis_client = None
-class RedisChannel:
-    do_tts_service = "do-tts-service"
-    tts_done_service = "tts-done-service"
-    do_asr_service = "do-asr-service"
-    asr_done_service = "asr-done-service"
+redis_client:redis.Redis =None
+# class RedisChannel:
+#     do_tts_service = "do-tts-service"
+#     tts_done_service = "tts-done-service"
+#     do_asr_service = "do-asr-service"
+#     asr_done_service = "asr-done-service"
     
 def main():
     try:
         argparse_handler()
-        
-        # redis_client = redis.Redis(host=args.redis_host, port=args.redis_port)
+        # print('main')
         global redis_client
         redis_client = redis.Redis(host=args.redis_host, port=args.redis_port)
-        ping = redis_client.ping()
+        # ping = redis_client.ping()
         
-        
-        tts = VitsService(
-            hparams_file_path = args.hparams_file_path,
-            checkpoint_path = args.checkpoint_path
-        )
+        # global assets_file_path
+        # assets_file_path = {
+        #     "hparams_file_path": os.path.abspath(os.path.join(project_path,'..','models','YunzeNeural','config.json')),
+        #     "checkpoint_path": os.path.abspath(os.path.join(project_path,'..','models','YunzeNeural','G_latest.pth')),
+        # }
+        tts = VitsService()
         
         tts.create_wav(
             text = args.text,
@@ -236,4 +243,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    

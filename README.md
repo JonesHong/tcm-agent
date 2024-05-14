@@ -28,8 +28,8 @@ pip install pyopenjtalk  -i https://pypi.tuna.tsinghua.edu.cn/simple --no-build-
 
 
 
-## run redis.service.py
-conda activate tcm-agent && python redis.service.py --port 51201
+## run redis_service.py
+conda activate tcm-agent && python main.py --port 51201
 
 
 
