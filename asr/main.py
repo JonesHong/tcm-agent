@@ -11,8 +11,7 @@ from WhisperLive.whisper_live.client import TranscriptionClient
 import time
 import threading
 
-from rx import operators as ops
-from rx.core.typing import Disposable
+from reactivex import operators as ops
 from opencc import OpenCC
 
 cc = OpenCC('t2s')  # Traditional Chinese to Simplified Chinese

@@ -20,4 +20,3 @@
 
 # Ignore Python bytecode directories
 **/__pycache__/
-asr/packages/WhisperLive/whisper_live/__pycache__/client.cpython-311.pyc

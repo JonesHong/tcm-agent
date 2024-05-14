@@ -14,7 +14,7 @@ import ffmpeg
 from . import utils
 
 
-from rx.subject.behaviorsubject import BehaviorSubject
+from reactivex.subject import BehaviorSubject
 from opencc import OpenCC
 
 # stop_event = threading.Event()

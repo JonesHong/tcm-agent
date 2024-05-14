@@ -2,7 +2,7 @@
 先跑 ASR 
 
 
-docker run -it --gpus all -p 9090:9090 ghcr.io/collabora/whisperlive-gpu:latest
+docker run -it --gpus all -p 9090:9090 --name whisperlive ghcr.io/collabora/whisperlive-gpu:latest
 
 
 # conda 

@@ -25,8 +25,7 @@ import threading
 import redis
 import json
 
-from rx import operators as ops
-from rx.core.typing import Disposable
+from reactivex import operators as ops
 from opencc import OpenCC
 
 cc = OpenCC('t2s')  # Traditional Chinese to Simplified Chinese
@@ -220,7 +219,7 @@ def argparse_handler():
                             help="Websocket host to run the server on.")
         parser.add_argument('--redis_port', '-rp',
                             type=int,
-                            default=6379,
+                            default=51201,
                             help="Websocket port to run the server on.")
         parser.add_argument('--redis_host','-rh',
                             type=str,
