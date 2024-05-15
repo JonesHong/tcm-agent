@@ -52,6 +52,9 @@ class VitsService:
         self._hparams_file_path = hparams_file_path
         self._checkpoint_path = checkpoint_path
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
+                
+        # print(torch.version.cuda)   
+        # print('torch.cuda.is_available',torch.cuda.is_available() )
         self.language_marks = {
             "Japanese": "",
             "日本語": "[JA]",

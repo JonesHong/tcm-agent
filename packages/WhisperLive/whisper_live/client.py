@@ -15,8 +15,6 @@ from . import utils
 
 from reactivex.subject import BehaviorSubject
 from opencc import OpenCC
-
-# stop_event = threading.Event()
 # 创建转换器，从繁体转为简体
 cc = OpenCC('t2s')  # t2s 表示 Traditional Chinese to Simplified Chinese
 

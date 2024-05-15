@@ -91,6 +91,14 @@ class RedisService:
         else:
             self.shutdown_handler(process_name="asr_process", process=self.asr_process, threads=[self.asr_thread_output, self.asr_thread_error])
 
+    def handle_tts_service(self, data_print):
+        text = data_print['text']
+        if text != '':
+            global tts_service
+            tts_service.create_wav(text)
+        else:
+            print('text is empty')
+            
     def shutdown_handler(self, process_name, process, threads):
         print(f'process terminate {process_name}')
         if process:
@@ -125,13 +133,6 @@ class RedisService:
             else:
                 break
 
-    def handle_tts_service(self, data_print):
-        text = data_print['text']
-        if text != '':
-            global tts_service
-            tts_service.create_wav(text)
-        else:
-            print('text is empty')
 
     def signal_handler(self, signum, frame):
         print('Received SIGINT, shutting down...')
