@@ -70,7 +70,7 @@ class AsrService:
             translate=translate
         )
         
-        self.resettable_timer_seconds = 3
+        self.resettable_timer_seconds = 5
         self.resettable_timer = ResettableTimer(self.resettable_timer_seconds, self.timeout_event)  # Set 3-second timeout
         
         self.last_segment_stream = self.transcription_client.client.last_segment_behavior_subject.pipe(

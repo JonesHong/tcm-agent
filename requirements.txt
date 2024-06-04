@@ -38,6 +38,12 @@ inflect==7.2.1
 urllib3==1.26.13
 pydantic==2.7.1
 
+angchain
+langchain-community
+langchainhub
+langchain-chroma
+bs4
+
 # 目前沒用到，但之後其他功能會用到先保留
 
 # Cython==0.29.21

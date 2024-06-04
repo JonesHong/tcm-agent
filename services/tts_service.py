@@ -98,7 +98,7 @@ class VitsService:
                 x_tst = stn_tst.unsqueeze(0).to(self.device)
                 x_tst_lengths = LongTensor([stn_tst.size(0)]).to(self.device)
                 sid = LongTensor([speaker_id]).to(self.device)
-                audio = self.net_g.infer(x_tst, x_tst_lengths, sid=sid, noise_scale=.667, noise_scale_w=0.8,
+                audio = self.net_g.infer(x_tst, x_tst_lengths, sid=sid, noise_scale=.667, noise_scale_w=0.6,
                                     length_scale=1.0 / speed)[0][0, 0].data.cpu().float().numpy()
             del stn_tst, x_tst, x_tst_lengths, sid
             return "Success", (self.hps.data.sampling_rate, audio)
@@ -137,7 +137,7 @@ class VitsService:
 
         return numpy_voice_array, output[0]
 
-    def create_wav(self, text, filename = None, speaker = "YunzeNeural", language = "中文", speed=0.8):
+    def create_wav(self, text, filename = None, speaker = "YunzeNeural", language = "中文", speed=0.6):
         """根據文本創建wav檔案"""
         numpy_voice_array, sr = self.process_text_and_generate_voice_array(self.tts_fn, speaker, text, language, speed)
         numpy_voice_array2 = np.int16(np.array(numpy_voice_array) * 32767)
@@ -175,7 +175,7 @@ class VitsService:
         # 返回完整的文件路徑
         return full_path
 
-    def create_voice_array(self, text, speaker = "YunzeNeural", language = "中文", speed=0.8):
+    def create_voice_array(self, text, speaker = "YunzeNeural", language = "中文", speed=0.6):
         """根據文本生成聲音數據列表"""
         numpy_voice_array, _ = self.process_text_and_generate_voice_array(self.tts_fn, speaker, text, language, speed)
         return numpy_voice_array
@@ -202,7 +202,7 @@ def argparse_handler():
                         help="Language for asr.")
     parser.add_argument('--speed',
                         type=int,
-                        default=0.8,
+                        default=0.6,
                         help="")
     parser.add_argument('--text', '-t',
                         type=str,
