@@ -32,6 +32,7 @@ class Agent:
         self.__answers = {}
         self.__question_count = 0
         self.__strategy = DiagnosticStrategy()
+        self.transformed_data = {"age": None, "male": None}
         
     @property
     def mode(self):

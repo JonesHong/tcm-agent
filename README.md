@@ -35,6 +35,8 @@ pip install pyopenjtalk  -i https://pypi.tuna.tsinghua.edu.cn/simple --no-build-
 
 ## run redis_service.py
 conda activate tcm-agent && python main.py 
+## run fastapi_service.py
+conda activate tcm-agent && python ./services/fastapi_service.py 
 
 
 ## Redis

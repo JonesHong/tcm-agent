@@ -1,0 +1,32 @@
+{
+    "meta": {
+        "msg": "issue jwt success",
+        "code": 1003,
+        "success": true,
+        "timestamp": "2024-06-18T19:49:19.946848+00:00"
+    },
+    "data": {
+        "jwt": "eyJhbGciOiJIUzUxMiIsInppcCI6IkRFRiJ9.eNosi9sKAjEMBf8lz1vYkN7cn5GoKVRXK21XFPHfTcWnwwxn3nDuGRYICWdxno11yRvLkc3uRIpCgZgoHdHDBG076Lny65rXopxbU-7lIjfTpD6kDskdFgwYg53R4wTyvP-Fiz9RyyojHLvfNITPFwAA__8.Ta4QK7uJQx1G-NvgOc6aSXiSkJg6YkRrUU1it1LhZyoHNNpaZ4VZPjeUc84SbVxbV9sKEE6qXbjdCTO--QykSw",
+        "user": {
+            "uid": "raymilo",
+            "username": "raymilo",
+            "password": null,
+            "salt": null,
+            "realName": null,
+            "avatar": null,
+            "phone": null,
+            "email": null,
+            "ip": null,
+            "sex": null,
+            "age": 0,
+            "isVip": 1,
+            "status": 1,
+            "createTime": "2024-05-22T14:15:27.000+0800",
+            "updateTime": "2024-05-22T14:15:27.000+0800",
+            "roleList": [
+                102
+            ],
+            "createWhere": 1
+        }
+    }
+}

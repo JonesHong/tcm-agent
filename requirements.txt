@@ -43,6 +43,9 @@ langchain-community
 langchainhub
 langchain-chroma
 bs4
+fastapi
+httpx
+uvicorn
 
 # 目前沒用到，但之後其他功能會用到先保留
 

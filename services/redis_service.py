@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import math
 import os
 import sys
 import signal
@@ -108,6 +109,21 @@ class RedisService:
             """ 打招呼 """
             self.__agent.initial()
             self.__agent.user_info_from_yolo = data_parsed['data']
+            # 提取年齡範圍並計算中位數
+            age_range = self.__agent.user_info_from_yolo['data']['age']
+            min_age, max_age = map(int, age_range.strip('()').split('-'))
+            median_age = math.floor((min_age + max_age) / 2)
+
+            # 提取性別並轉換
+            gender = self.__agent.user_info_from_yolo['data']['gender']
+            male = 0 if gender == 'Female' else 1
+
+            # 轉換後的資料
+            self.__agent.transformed_data = {
+                'age': median_age,
+                'male': male
+            }
+
             self.__agent.sex = data_parsed['data']['gender'].lower()
             response = self.__agent.invoke('開始問診。')
             
@@ -115,7 +131,7 @@ class RedisService:
             self.publisher(RedisChannel.do_tts_service, message)
         elif data_parsed['type'] == 1 :
             """ 說再見 """
-            prompt = "很高興為您服務，中醫提倡“治標治本”，除了使用藥物治療，更重要的是通過調整生活方式來達到長期的健康目標。這也是中醫強調“治未病”的理念，即預防勝於治療，通過健康的生活方式來防止疾病的發生。需要注意的是，中藥治療可能會有一些副作用，如果感到非常不適，請立即就醫或尋求專業幫助。"
+            # prompt = "很高興為您服務，中醫提倡“治標治本”，除了使用藥物治療，更重要的是通過調整生活方式來達到長期的健康目標。這也是中醫強調“治未病”的理念，即預防勝於治療，通過健康的生活方式來防止疾病的發生。需要注意的是，中藥治療可能會有一些副作用，如果感到非常不適，請立即就醫或尋求專業幫助。"
             response = SongBieYu({"input": "根據知識庫。參考文件內容說再見，要完整一點的版本"})
             message = {"text": response['answer']}
             self.__agent.initial()

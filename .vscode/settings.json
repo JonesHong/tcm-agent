@@ -1,5 +1,8 @@
 {
     "python.analysis.extraPaths": [
         "./asr/packages"
+    ],
+    "cSpell.words": [
+        "quanxi"
     ]
 }
