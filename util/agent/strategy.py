@@ -8,7 +8,7 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 # 添加项目根目录到 sys.path
 sys.path.append(project_root)
 
-from util.agent.mode import AgentMode
+# from util.agent.mode import AgentMode
 from util.rag_chain import SelfIntroduction, JiudaTizhi, ZhongyiShiwen, llm
 
 
@@ -19,6 +19,8 @@ class InteractionStrategy(ABC):
     def handle_interaction(self, agent, user_input):
         pass
 
+      
+# Diagnostic mode for medical inquiry (問診模式")
 class DiagnosticStrategy(InteractionStrategy):
     def handle_interaction(self, agent, user_input):
         if agent.question_count == 0:
@@ -52,17 +54,35 @@ class DiagnosticStrategy(InteractionStrategy):
         agent.messages.append(response)
         return response
 
-class ChitchatStrategy(InteractionStrategy):
+# Tongue diagnosis mode for health assessment (舌診模式)
+class TongueDiagnosis(InteractionStrategy):
     def handle_interaction(self, agent, user_input):
-        # 閒聊模式的具體邏輯在這裡實現
+        agent.redis_client.publish(R)
+        # response = llm.invoke(f"Chitchat response for input: {user_input}")
+        # agent.messages.append(response)
+        # return response
+
+# Evaluation and advice mode (評估和建議模式)
+class EvaluationAndAdvice(InteractionStrategy):
+    def handle_interaction(self, agent, user_input):
+        # 自由提問模式的具體邏輯在這裡實現
+        # 串接 RagFlow 使用大量額外資料，提供自由問答
         response = llm.invoke(f"Chitchat response for input: {user_input}")
         agent.messages.append(response)
         return response
 
+# Inquiry mode for general questions (自由提問模式)
 class InquiryStrategy(InteractionStrategy):
     def handle_interaction(self, agent, user_input):
         # 自由提問模式的具體邏輯在這裡實現
         # 串接 RagFlow 使用大量額外資料，提供自由問答
+        response = llm.invoke(f"Chitchat response for input: {user_input}")
+        agent.messages.append(response)
+        return response
+# Chitchat mode for casual conversation (閒聊模式)
+class ChitchatStrategy(InteractionStrategy):
+    def handle_interaction(self, agent, user_input):
+        # 閒聊模式的具體邏輯在這裡實現
         response = llm.invoke(f"Chitchat response for input: {user_input}")
         agent.messages.append(response)
         return response

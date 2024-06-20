@@ -8,15 +8,23 @@ docker run -it --gpus all -p 9090:9090 --name whisperlive --restart=always whisp
 <!-- docker run -it --gpus all -p 9090:9090 --name whisperlive ghcr.io/collabora/whisperlive-gpu:latest  --restart=always  -->
 
 
-# conda 
+# Agent Conda 
 <!-- conda env remove -n tcm-agent -->
 conda update --all -y
 conda create -n  tcm-agent  python=3.11 -y
 conda activate tcm-agent
 conda install -c conda-forge jupyter -y
 
-pip install -r requirements.txt 
-<!-- conda install --file requirements_conda.txt -->
+pip install -r agent-requirements.txt 
+
+# API Conda 
+<!-- conda env remove -n tcm-api -->
+conda update --all -y
+conda create -n  tcm-api  python=3.11 -y
+conda activate tcm-api
+conda install -c conda-forge jupyter -y
+
+pip install -r api-requirements.txt 
 
 
 <!-- 在windows -->
@@ -36,7 +44,7 @@ pip install pyopenjtalk  -i https://pypi.tuna.tsinghua.edu.cn/simple --no-build-
 ## run redis_service.py
 conda activate tcm-agent && python main.py 
 ## run fastapi_service.py
-conda activate tcm-agent && python ./services/fastapi_service.py 
+conda activate tcm-api && python ./services/fastapi_service.py 
 
 
 ## Redis

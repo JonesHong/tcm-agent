@@ -4,8 +4,7 @@ import os
 import sys
 from typing import Literal
 
-from util.agent.strategy import ChitchatStrategy, DiagnosticStrategy, InquiryStrategy
-
+from redis import Redis
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -13,7 +12,8 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(project_root)
 
 from util.agent.mode import AgentMode
-from util.rag_chain import SelfIntroduction, JiudaTizhi, ZhongyiShiwen, llm
+# from util.rag_chain import SelfIntroduction, JiudaTizhi, ZhongyiShiwen, llm
+from util.agent.strategy import ChitchatStrategy, DiagnosticStrategy, EvaluationAndAdvice, InquiryStrategy, TongueDiagnosis
 
 
 class Agent:
@@ -33,6 +33,8 @@ class Agent:
         self.__question_count = 0
         self.__strategy = DiagnosticStrategy()
         self.transformed_data = {"age": None, "male": None}
+        self.redis_client:Redis = None
+        # self.question_count = None
         
     @property
     def mode(self):
@@ -61,10 +63,14 @@ class Agent:
         self.__mode = value
         if value == AgentMode.DIAGNOSTIC:
             self.__strategy = DiagnosticStrategy()
-        elif value == AgentMode.CHITCHAT:
-            self.__strategy = ChitchatStrategy()
+        elif value == AgentMode.TONGUE_DIAGNOSIS:
+            self.__strategy = TongueDiagnosis()
+        elif value == AgentMode.EVALUATION_ADVICE:
+            self.__strategy = EvaluationAndAdvice()
         elif value == AgentMode.INQUIRY:
             self.__strategy = InquiryStrategy()
+        elif value == AgentMode.CHITCHAT:
+            self.__strategy = ChitchatStrategy()
             
     @sex.setter
     def sex(self, value: Literal['male', 'female']):

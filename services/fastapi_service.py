@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import signal
 import sys
@@ -5,14 +6,23 @@ import os
 from typing import Optional
 
 from fastapi.responses import JSONResponse
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
+import redis
 
 import json
-from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
+import socketio
 import httpx
 import configparser
 from datetime import datetime, timedelta, timezone
+# from services.redis_core import RedisService
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from util.redis_channel import RedisChannel
 from models.schemas.fastapi import LoginInModel, QuanxiRequest    # 引入 LoginInModel
+from util.redis_core import RedisCore
+from util.socket_topic import SocketTopic
 
 
 # 獲取當前文件的絕對路徑
@@ -69,6 +79,7 @@ def needs_refresh(token_data):
     now = datetime.now(timezone.utc)
     token_age = now - token_data['meta']['timestamp']
     refresh_needed = 10 < token_age.total_seconds() / 3600 < 20
+    print(token_age.total_seconds() / 3600)
     print(f"token 是否需要刷新: {refresh_needed}")
     return refresh_needed
 
@@ -105,11 +116,17 @@ async def get_new_token():
 async def get_latest_appkey():
     try:  # 新增
         print("獲取最新的 appkey")
+        token_data = load_token()
         appkey_url = "https://api.aikanshe.com/user/getAppkey"
-        headers = {"Authorization": f"Bearer {await get_token()}"}
+        headers = {
+            "appId":  token_data['data']['user']['uid'],
+            "authorization": token_data['data']['jwt']
+            }
+        
         async with httpx.AsyncClient() as client:
             response = await client.get(appkey_url, headers=headers)
             if response.status_code != 200:
+                get_new_token()
                 raise HTTPException(status_code=response.status_code, detail="Failed to get appkey")
             data = response.json()
             latest_appkey = max(data['data'], key=lambda x: x['createTime'])['appkey']
@@ -122,8 +139,9 @@ async def get_latest_appkey():
 async def update_appkey(old_appkey):
     try:  # 新增
         print("更新 appkey")
+        token_data = load_token()
         update_url = "https://api.aikanshe.com/user/updateAppkey"
-        headers = {"Authorization": f"Bearer {await get_token()}", "Content-Type": "application/json"}
+        headers = {"Authorization": f"Bearer {token_data['data']['jwt']}", "Content-Type": "application/json"}
         body = {
             "appkey": old_appkey
         }
@@ -228,8 +246,100 @@ def get_unique_filename(file_path: str,uploaded_file_data) -> str:
     return new_file_path
 
 
-app = FastAPI()
 
+
+
+
+# 創建一個 Socket.IO 服務器實例
+sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
+
+
+
+def emit_message(topic, msg): 
+    async def asyncSendMsg(msg): 
+        await sio.emit(topic, msg, broadcast=True)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(asyncSendMsg(msg))
+
+# 身份驗證中間件
+@sio.event
+async def connect(sid, environ, auth=None):
+    token = environ.get('HTTP_TOKEN', None)  # 從 HTTP header 或環境中提取 token
+    print(token)
+    if token == "UNITY":
+        await sio.save_session(sid, {"authenticated": True})
+        return True  # 允許連接
+    await sio.disconnect(sid)
+    return False  # 斷開連接
+# 身份驗證中間件
+# @sio.event
+# async def connect(sid, environ, auth):
+#     headers = dict(environ['asgi.scope']['headers'])
+#     token = headers.get(b'http_token', None)  # 從 HTTP header 中提取 token
+#     if token == b'UNITY':  # 記得這裡要和 token 的 bytes 形式比較
+#         await sio.save_session(sid, {"authenticated": True})
+#         return True  # 允許連接
+#     await sio.disconnect(sid)
+#     return False  # 斷開連接
+
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# 將 Socket.IO 服務器掛載到 FastAPI 應用上
+socket_app = socketio.ASGIApp(sio, other_asgi_app=app)
+
+# FastAPI 路由
+@app.get("/")
+async def read_main():
+    return {"message": "Hello from FastAPI"}
+
+# Socket.IO 事件
+@sio.event
+async def connect(sid, environ):
+    print('conn', sid)
+    
+@sio.event
+async def disconnect(sid):
+    print("Client disconnected", sid)
+
+    
+@sio.on('ttt')
+async def ttt(sid, data):
+    await handleASRToggle(sid,False)
+
+@sio.on(SocketTopic.asr_toggle)
+async def handleASRToggle(sid, data):
+    """
+    do_asr_service = 'do-asr-service'
+    0 => off 關閉, 
+    1 =>  on 開啟
+    {
+    'state' : int,
+    }
+    """
+    # print(data)
+    if data: state = 1
+    else: state = 0
+    
+    do_asr_data = {"state":state}
+    do_asr_message = json.dumps(do_asr_data)
+    redis_core.publisher(RedisChannel.do_asr_service, do_asr_message)
+    
+    
+@app.get("/account/login")
+async def get_account_login():
+    try:  # 新增
+        token = await get_new_token()
+        return {"token": token}
+    except Exception as e:  # 新增
+        print(f"登入失敗: {e}")  # 新增
+        raise HTTPException(status_code=500, detail="Login failed")  # 新增
+    
 @app.get("/login", response_model=dict)
 async def post_login():
     try:  # 新增
@@ -327,8 +437,13 @@ async def quanxi_analysis(
         print(f"全息舌像分析發生錯誤: {e}")  # 新增
         raise HTTPException(status_code=500, detail="Analysis failed")  # 新增
 
+def handle_message(channel, data_parsed):
+    if channel == RedisChannel.tts_done_service:
+        handle_tts_done_service(data_parsed)
 
-
+def handle_tts_done_service(data_parsed):
+    emit_message(SocketTopic.docker_message, {'audioPath' : data_parsed['audio_path'], "text" : data_parsed['text']})
+    pass
 
 
 # 定義自訂的信號處理器來優雅地停止服務
@@ -343,12 +458,31 @@ def handle_exit(sig, frame):
 signal.signal(signal.SIGINT, handle_exit)
 signal.signal(signal.SIGTERM, handle_exit)
 
+def argparse_handler():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', '-p', type=int, default=52045, help="Websocket port to run the server on.")
+    parser.add_argument('--host', type=str, default="localhost", help="Websocket host to run the server on.")
+    parser.add_argument('--redis_port', '-rp', type=int, default=51201, help="Websocket port to run the server on.")
+    parser.add_argument('--redis_host','-rh', type=str, default="localhost", help="Websocket host to run the server on.")
+    global args
+    args = parser.parse_args()
+    
 if __name__ == "__main__":
+    
+    argparse_handler()
+    channels = [
+        RedisChannel.tts_done_service
+    ]
+    global redis_core
+    redis_core = RedisCore(host=args.redis_host, port=args.redis_port, channels=channels, message_handler=handle_message)
+    
+    
     import uvicorn
     
     # uvicorn.run(app, host="localhost", port=8000)
     
-    uvicorn_config = uvicorn.Config(app, host="localhost", port=8000)
+    # uvicorn_config = uvicorn.Config(app, host=args.host, port=args.port)
+    uvicorn_config = uvicorn.Config(socket_app, host=args.host, port=args.port)
     server = uvicorn.Server(uvicorn_config)
     
     loop = asyncio.get_event_loop()

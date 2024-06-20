@@ -31,7 +31,7 @@ from datetime import datetime
 import redis
 import json
 from opencc import OpenCC
-from util.redis_topic import RedisChannel
+from util.redis_channel import RedisChannel
 
 cc = OpenCC('t2s')  # Traditional Chinese to Simplified Chinese
 

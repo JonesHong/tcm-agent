@@ -22,7 +22,7 @@ import time
 import threading
 import json
 
-from util.redis_topic import RedisChannel
+from util.redis_channel import RedisChannel
 from reactivex import operators as ops
 from opencc import OpenCC
 
@@ -70,7 +70,7 @@ class AsrService:
             translate=translate
         )
         
-        self.resettable_timer_seconds = 5
+        self.resettable_timer_seconds = 3
         self.resettable_timer = ResettableTimer(self.resettable_timer_seconds, self.timeout_event)  # Set 3-second timeout
         
         self.last_segment_stream = self.transcription_client.client.last_segment_behavior_subject.pipe(
@@ -188,8 +188,8 @@ def main():
         argparse_handler()
         global redis_client
         redis_client = redis.Redis(host=args.redis_host, port=args.redis_port)
-        ping = redis_client.ping()
-        print(ping)
+        # ping = redis_client.ping()
+        # print(ping)
         
         asr_service = AsrService(
             host=args.host,
