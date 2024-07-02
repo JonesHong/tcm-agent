@@ -8,10 +8,12 @@
 # */packages/vits
 # */packages/WhisperLive
 
+**/backup/
 **/chunks/
 **/audio/
 **/models/
 **/uploads/
+**/logs
 
 **/output_recording.wav
 **/output.srt

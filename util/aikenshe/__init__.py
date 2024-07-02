@@ -2,11 +2,13 @@
 import os 
 import sys
 
+
 def trim_path(path):
     return os.path.normpath(os.path.abspath(path))
 
 THIS_DIR = trim_path(os.path.dirname(__file__))
-ROOT_DIR = trim_path(os.path.dirname(THIS_DIR))
+UTIL_DIR = trim_path(os.path.dirname(THIS_DIR))
+ROOT_DIR = trim_path(os.path.dirname(UTIL_DIR))
 
         
 def add_dir_to_sys_path(dir):
@@ -35,16 +37,4 @@ def logger_init(process_id):
     #啟動Log清除者
     logger_cleaner = LoggerClear(log_path=log_path, log_retention=log_config.rotation)
     logger_cleaner.start()
-
-
-
-
-
-
-
-
-
-
-
-
 

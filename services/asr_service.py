@@ -22,7 +22,7 @@ import time
 import threading
 import json
 
-from util.redis_channel import RedisChannel
+from util.redis.channel import RedisChannel
 from reactivex import operators as ops
 from opencc import OpenCC
 

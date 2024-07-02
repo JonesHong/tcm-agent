@@ -14,8 +14,8 @@ from redis import Redis
 
 from services.agent_service import AgentService
 from services.tts_service import VitsService
-from util.rag_chain import SongBieYu
-from util.redis_channel import RedisChannel
+from util.agent.rag_chain import SongBieYu
+from util.redis.channel import RedisChannel
 
 # If root is main.py
 project_path = os.getcwd()

@@ -2,18 +2,20 @@
 import os
 import sys
 
+
 # from services import redis_service
 
 
 project_path = os.getcwd()
-print("tts_service",project_path)
-print(f'tts_service.py {__file__}')
+# print("tts_service",project_path)
+# print(f'tts_service.py {__file__}')
 
 # 获取项目根目录
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 # 添加项目根目录到 sys.path
 sys.path.append(project_root)
+
 import time
 
 import argparse
@@ -31,7 +33,7 @@ from datetime import datetime
 import redis
 import json
 from opencc import OpenCC
-from util.redis_channel import RedisChannel
+from util.redis.channel import RedisChannel
 
 cc = OpenCC('t2s')  # Traditional Chinese to Simplified Chinese
 
@@ -166,10 +168,10 @@ class VitsService:
             redis_client.publish(RedisChannel.tts_done_service, tts_done_message)
             print(f"Redis publish {RedisChannel.tts_done_service}: {data}")
             
-            time.sleep(1)
-            do_tts_message = json.dumps({"text": ""})
-            redis_client.publish(RedisChannel.do_tts_service, do_tts_message)
-            print(f"Redis publish {RedisChannel.do_tts_service}: {do_tts_message}")
+            # time.sleep(1)
+            # do_tts_message = json.dumps({"text": ""})
+            # redis_client.publish(RedisChannel.do_tts_service, do_tts_message)
+            # print(f"Redis publish {RedisChannel.do_tts_service}: {do_tts_message}")
         else:
             print("Redis client is not connected.")
         # 返回完整的文件路徑
@@ -202,7 +204,7 @@ def argparse_handler():
                         help="Language for asr.")
     parser.add_argument('--speed',
                         type=int,
-                        default=0.6,
+                        default=1.2,
                         help="")
     parser.add_argument('--text', '-t',
                         type=str,

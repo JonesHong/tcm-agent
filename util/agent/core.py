@@ -1,26 +1,30 @@
-
-# 获取项目根目录
-import os
-import sys
+import __init__
 from typing import Literal
-
-from redis import Redis
-
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-
-# 添加项目根目录到 sys.path
-sys.path.append(project_root)
+from reactivex.subject.behaviorsubject import BehaviorSubject
 
 from util.agent.mode import AgentMode
-# from util.rag_chain import SelfIntroduction, JiudaTizhi, ZhongyiShiwen, llm
 from util.agent.strategy import ChitchatStrategy, DiagnosticStrategy, EvaluationAndAdvice, InquiryStrategy, TongueDiagnosis
 
 
 class Agent:
     user_info_from_yolo = None
+    modeSub:BehaviorSubject
     def __init__(self):
         self.__mode = AgentMode.DIAGNOSTIC
-        self.__qa = ["睡眠", "胃口", "大便", "小便", "口渴", "寒熱", "汗", "體力", "性功能", "女子月經"]
+        self.modeSub = BehaviorSubject(self.__mode)
+        self.__qa = ["睡眠", "胃口", "大便", "小便", "口渴", "寒熱", "汗", "體力", "性功能", "月經"]
+        self.__interrogation_details = {
+            "睡眠": "你的睡眠狀況如何？晚上好睡嗎？有沒有早醒或多夢的情況？是否固定時間會醒來？",
+            "胃口": "你最近食欲怎麼樣？會感覺餓嗎？有沒有特別想吃的食物或口味？胃口不好嗎？",
+            "大便": "大便情況如何？有便秘嗎？每天都有大便嗎？大便顏色和氣味如何？",
+            "小便": "小便顏色正常嗎？有頻尿或尿不出來的問題嗎？一天上幾次廁所？",
+            "口渴": "你經常覺得口渴嗎？渴的時候喜歡喝什麼溫度的水？不渴的時候會忘記喝水嗎？",
+            "寒熱": "你覺得身體是偏冷還是偏熱？手腳會不會冰冷？",
+            "汗": "你容易出汗嗎？晚上會盜汗嗎？會不會動不動就流汗或完全不出汗？",
+            "體力": "你最近精神狀況如何？感覺疲累嗎？早上起床精神好嗎？白天能集中精神嗎？",
+            "性功能": "你的性功能正常嗎？有沒有什麼問題？",
+            "月經": "月經情況怎麼樣？是準時還是會提前或延後？會痛嗎？有沒有生過小孩？"
+        }
         self.initial()
         
 
@@ -31,9 +35,8 @@ class Agent:
         self.__questions = {}
         self.__answers = {}
         self.__question_count = 0
-        self.__strategy = DiagnosticStrategy()
+        self.mode = AgentMode.DIAGNOSTIC
         self.transformed_data = {"age": None, "male": None}
-        self.redis_client:Redis = None
         # self.question_count = None
         
     @property
@@ -49,6 +52,9 @@ class Agent:
     def qa(self):
         return self.__qa
     @property
+    def interrogation_details(self):
+        return self.__interrogation_details
+    @property
     def questions(self):
         return self.__questions
     @property
@@ -60,6 +66,9 @@ class Agent:
     
     @mode.setter
     def mode(self, value):
+        if self.__mode != value:
+            self.modeSub.on_next(value)
+            
         self.__mode = value
         if value == AgentMode.DIAGNOSTIC:
             self.__strategy = DiagnosticStrategy()
@@ -88,7 +97,7 @@ class Agent:
         self.__question_count = value
 
     def invoke(self, user_input):
-        if self.question_count is not None:
-            return self.__strategy.handle_interaction(self, user_input)
-        else:
-            return '請稍後在試。'
+        # if self.question_count is not None:
+        return self.__strategy.handle_interaction(self, user_input)
+        # else:
+        #     return '請稍後在試。'

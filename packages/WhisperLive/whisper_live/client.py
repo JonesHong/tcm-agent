@@ -1,4 +1,5 @@
 import os
+import shutil
 import wave
 
 import numpy as np
@@ -9,6 +10,9 @@ import websocket
 import uuid
 import time
 import ffmpeg
+# import whisper_live.utils as utils
+
+# import whisper_live.utils as utils
 # import utils as utils
 from . import utils
 
@@ -16,7 +20,7 @@ from . import utils
 from reactivex.subject import BehaviorSubject
 from opencc import OpenCC
 # 创建转换器，从繁体转为简体
-cc = OpenCC('t2s')  # t2s 表示 Traditional Chinese to Simplified Chinese
+cc = OpenCC('t2s')  # t2s 表示 Traditional Chine
 
 class Client:
     """
@@ -48,6 +52,8 @@ class Client:
             lang (str, optional): The selected language for transcription. Default is None.
             translate (bool, optional): Specifies if the task is translation. Default is False.
         """
+        self.host = host
+        self.port = port
         self.recording = False
         self.task = "transcribe"
         self.uid = str(uuid.uuid4())
@@ -63,6 +69,7 @@ class Client:
         self.last_received_segment = None
         self.last_segment_behavior_subject = BehaviorSubject({"text": ""})
         self.segment_behavior_subject = BehaviorSubject("")
+        self.client_socket: websocket.WebSocketApp | None = None
 
 
         if translate:
@@ -72,30 +79,17 @@ class Client:
         self.audio_bytes = None
 
         if host is not None and port is not None:
-            socket_url = f"ws://{host}:{port}"
-            self.client_socket = websocket.WebSocketApp(
-                socket_url,
-                on_open=lambda ws: self.on_open(ws),
-                on_message=lambda ws, message: self.on_message(ws, message),
-                on_error=lambda ws, error: self.on_error(ws, error),
-                on_close=lambda ws, close_status_code, close_msg: self.on_close(
-                    ws, close_status_code, close_msg
-                ),
-            )
+            self.connect_websocket()
         else:
             print("[ERROR]: No host or port specified.")
             return
 
         Client.INSTANCES[self.uid] = self
 
-        # start websocket client in a thread
-        self.ws_thread = threading.Thread(target=self.client_socket.run_forever)
-        self.ws_thread.setDaemon(True)
-        self.ws_thread.start()
-
         self.transcript = []
         print("[INFO]: * recording")
 
+        
     def handle_status_messages(self, message_data):
         """Handles server status messages."""
         status = message_data["status"]
@@ -120,6 +114,7 @@ class Client:
                       (not self.transcript or
                         float(seg['start']) >= float(self.transcript[-1]['end']))):
                     self.transcript.append(seg)
+        segments[-1]["text"] = cc.convert(segments[-1]["text"])
         # update last received segment and last valid response time
         if self.last_received_segment is None or self.last_received_segment != segments[-1]["text"]:
             self.last_response_received = time.time()
@@ -128,6 +123,7 @@ class Client:
         self.last_segment_behavior_subject.on_next(segments[-1])
         
         lines = utils.join_transcript(text)
+        
         simplified_text = cc.convert(lines)
         self.segment_behavior_subject.on_next(simplified_text)
         # Truncate to last 3 entries for brevity.
@@ -227,6 +223,27 @@ class Client:
         except Exception as e:
             print(e)
 
+    def connect_websocket(self):
+        """Establishes the WebSocket connection and starts the thread."""
+        if self.client_socket and self.client_socket.sock and self.client_socket.sock.connected:
+            print("[INFO]: WebSocket is already connected.")
+            return
+
+        socket_url = f"ws://{self.host}:{self.port}"
+        self.client_socket = websocket.WebSocketApp(
+            socket_url,
+            on_open=lambda ws: self.on_open(ws),
+            on_message=lambda ws, message: self.on_message(ws, message),
+            on_error=lambda ws, error: self.on_error(ws, error),
+            on_close=lambda ws, close_status_code, close_msg: self.on_close(
+                ws, close_status_code, close_msg
+            ),
+        )
+        # start websocket client in a thread
+        self.ws_thread = threading.Thread(target=self.client_socket.run_forever)
+        self.ws_thread.setDaemon(True)
+        self.ws_thread.start()
+
     def close_websocket(self):
         """
         Close the WebSocket connection and join the WebSocket thread.
@@ -273,6 +290,7 @@ class Client:
         while time.time() - self.last_response_received < self.disconnect_if_no_response_for:
             continue
 
+
 class TranscriptionTeeClient:
     """
     Client for handling audio recording, streaming, and transcription tasks via one or more
@@ -286,7 +304,7 @@ class TranscriptionTeeClient:
     Attributes:
         clients (list): the underlying Client instances responsible for handling WebSocket connections.
     """
-    def __init__(self, clients):
+    def __init__(self, clients, save_output_recording=False, output_recording_filename="./output_recording.wav"):
         self.clients = clients
         if not self.clients:
             raise Exception("At least one client is required.")
@@ -295,6 +313,8 @@ class TranscriptionTeeClient:
         self.channels = 1
         self.rate = 16000
         self.record_seconds = 60000
+        self.save_output_recording = save_output_recording
+        self.output_recording_filename = output_recording_filename
         self.frames = b""
         self.p = pyaudio.PyAudio()
         try:
@@ -309,7 +329,7 @@ class TranscriptionTeeClient:
             print(f"[WARN]: Unable to access microphone. {error}")
             self.stream = None
 
-    def __call__(self, audio=None, hls_url=None, save_file=None):
+    def __call__(self, audio=None, rtsp_url=None, hls_url=None, save_file=None):
         """
         Start the transcription process.
 
@@ -321,6 +341,10 @@ class TranscriptionTeeClient:
             audio (str, optional): Path to an audio file for transcription. Default is None, which triggers live recording.
 
         """
+        assert sum(
+            source is not None for source in [audio, rtsp_url, hls_url]
+        ) <= 1, 'You must provide only one selected source'
+
         print("[INFO]: Waiting for server ready ...")
         for client in self.clients:
             while not client.recording:
@@ -334,6 +358,8 @@ class TranscriptionTeeClient:
         elif audio is not None:
             resampled_file = utils.resample(audio)
             self.play_file(resampled_file)
+        elif rtsp_url is not None:
+            self.process_rtsp_stream(rtsp_url)
         else:
             self.record()
 
@@ -341,8 +367,6 @@ class TranscriptionTeeClient:
         """Closes all client websockets."""
         for client in self.clients:
             client.close_websocket()
-            
-        # raise KeyboardInterrupt('Stop ...')
 
     def write_all_clients_srt(self):
         """Writes out .srt files for all clients."""
@@ -414,6 +438,16 @@ class TranscriptionTeeClient:
                 self.write_all_clients_srt()
                 print("[INFO]: Keyboard interrupt.")
 
+    def process_rtsp_stream(self, rtsp_url):
+        """
+        Connect to an RTSP source, process the audio stream, and send it for trascription.
+
+        Args:
+            rtsp_url (str): The URL of the RTSP stream source.
+        """
+        process = self.get_rtsp_ffmpeg_process(rtsp_url)
+        self.handle_ffmpeg_process(process, stream_type='RTSP')
+
     def process_hls_stream(self, hls_url, save_file):
         """
         Connect to an HLS source, process the audio stream, and send it for transcription.
@@ -422,27 +456,12 @@ class TranscriptionTeeClient:
             hls_url (str): The URL of the HLS stream source.
             save_file （str, optional): Local path to save the network stream.
         """
-        print("[INFO]: Connecting to HLS stream...")
-        process = None  # Initialize process to None
+        process = self.get_hls_ffmpeg_process(hls_url, save_file)
+        self.handle_ffmpeg_process(process, stream_type='HLS')
 
+    def handle_ffmpeg_process(self, process, stream_type):
+        print(f"[INFO]: Connecting to {stream_type} stream...")
         try:
-            # Connecting to the HLS stream using ffmpeg-python
-            if save_file is None:
-                process = (
-                    ffmpeg
-                    .input(hls_url, threads=0)
-                    .output('-', format='s16le', acodec='pcm_s16le', ac=1, ar=self.rate)
-                    .run_async(pipe_stdout=True, pipe_stderr=True)
-                )
-            else:
-                input = ffmpeg.input(hls_url, threads=0)
-                output_file = input.output(save_file, acodec='copy', vcodec='copy').global_args('-loglevel', 'quiet')
-                output_std = input.output('-', format='s16le', acodec='pcm_s16le', ac=1, ar=self.rate)
-                process = (
-                    ffmpeg.merge_outputs(output_file, output_std)
-                    .run_async(pipe_stdout=True, pipe_stderr=True)
-                )
-
             # Process the stream
             while True:
                 in_bytes = process.stdout.read(self.chunk * 2)  # 2 bytes per sample
@@ -452,16 +471,79 @@ class TranscriptionTeeClient:
                 self.multicast_packet(audio_array.tobytes())
 
         except Exception as e:
-            print(f"[ERROR]: Failed to connect to HLS stream: {e}")
+            print(f"[ERROR]: Failed to connect to {stream_type} stream: {e}")
         finally:
-            self.close_all_clients() 
+            self.close_all_clients()
             self.write_all_clients_srt()
             if process:
                 process.kill()
 
-        print("[INFO]: HLS stream processing finished.")
+        print(f"[INFO]: {stream_type} stream processing finished.")
 
-    def record(self, out_file="output_recording.wav"):
+    def get_rtsp_ffmpeg_process(self, rtsp_url):
+        return (
+            ffmpeg
+            .input(rtsp_url, threads=0)
+            .output('-', format='s16le', acodec='pcm_s16le', ac=1, ar=self.rate)
+            .run_async(pipe_stdout=True, pipe_stderr=True)
+        )
+
+    def get_hls_ffmpeg_process(self, hls_url, save_file):
+        if save_file is None:
+            process = (
+                ffmpeg
+                .input(hls_url, threads=0)
+                .output('-', format='s16le', acodec='pcm_s16le', ac=1, ar=self.rate)
+                .run_async(pipe_stdout=True, pipe_stderr=True)
+            )
+        else:
+            input = ffmpeg.input(hls_url, threads=0)
+            output_file = input.output(save_file, acodec='copy', vcodec='copy').global_args('-loglevel', 'quiet')
+            output_std = input.output('-', format='s16le', acodec='pcm_s16le', ac=1, ar=self.rate)
+            process = (
+                ffmpeg.merge_outputs(output_file, output_std)
+                .run_async(pipe_stdout=True, pipe_stderr=True)
+            )
+
+        return process
+
+    def save_chunk(self, n_audio_file):
+        """
+        Saves the current audio frames to a WAV file in a separate thread.
+
+        Args:
+        n_audio_file (int): The index of the audio file which determines the filename.
+                            This helps in maintaining the order and uniqueness of each chunk.
+        """
+        t = threading.Thread(
+            target=self.write_audio_frames_to_file,
+            args=(self.frames[:], f"chunks/{n_audio_file}.wav",),
+        )
+        t.start()
+
+    def finalize_recording(self, n_audio_file):
+        """
+        Finalizes the recording process by saving any remaining audio frames,
+        closing the audio stream, and terminating the process.
+
+        Args:
+        n_audio_file (int): The file index to be used if there are remaining audio frames to be saved.
+                            This index is incremented before use if the last chunk is saved.
+        """
+        if self.save_output_recording and len(self.frames):
+            self.write_audio_frames_to_file(
+                self.frames[:], f"chunks/{n_audio_file}.wav"
+            )
+            n_audio_file += 1
+        self.stream.stop_stream()
+        self.stream.close()
+        self.p.terminate()
+        self.close_all_clients()
+        if self.save_output_recording:
+            self.write_output_recording(n_audio_file)
+        self.write_all_clients_srt()
+
+    def record(self):
         """
         Record audio data from the input stream and save it to a WAV file.
 
@@ -473,15 +555,12 @@ class TranscriptionTeeClient:
         The recording will continue until the specified duration is reached or until the `RECORDING` flag is set to `False`.
         The recording process can be interrupted by sending a KeyboardInterrupt (e.g., pressing Ctrl+C). After recording,
         the method combines all the saved audio chunks into the specified `out_file`.
-
-        Args:
-            out_file (str, optional): The name of the output WAV file to save the entire recording.
-                                      Default is "output_recording.wav".
-
         """
         n_audio_file = 0
-        if not os.path.exists("chunks"):
-            os.makedirs("chunks", exist_ok=True)
+        if self.save_output_recording:
+            if os.path.exists("chunks"):
+                shutil.rmtree("chunks")
+            os.makedirs("chunks")
         try:
             for _ in range(0, int(self.rate / self.chunk * self.record_seconds)):
                 if not any(client.recording for client in self.clients):
@@ -495,31 +574,14 @@ class TranscriptionTeeClient:
 
                 # save frames if more than a minute
                 if len(self.frames) > 60 * self.rate:
-                    t = threading.Thread(
-                        target=self.write_audio_frames_to_file,
-                        args=(
-                            self.frames[:],
-                            f"chunks/{n_audio_file}.wav",
-                        ),
-                    )
-                    t.start()
-                    n_audio_file += 1
+                    if self.save_output_recording:
+                        self.save_chunk(n_audio_file)
+                        n_audio_file += 1
                     self.frames = b""
             self.write_all_clients_srt()
 
         except KeyboardInterrupt:
-            if len(self.frames):
-                self.write_audio_frames_to_file(
-                    self.frames[:], f"chunks/{n_audio_file}.wav"
-                )
-                n_audio_file += 1
-            self.stream.stop_stream()
-            self.stream.close()
-            self.p.terminate()
-            self.close_all_clients()
-            
-            self.write_output_recording(n_audio_file, out_file)
-            self.write_all_clients_srt()
+            self.finalize_recording(n_audio_file)
 
     def write_audio_frames_to_file(self, frames, file_name):
         """
@@ -540,7 +602,7 @@ class TranscriptionTeeClient:
             wavfile.setframerate(self.rate)
             wavfile.writeframes(frames)
 
-    def write_output_recording(self, n_audio_file, out_file):
+    def write_output_recording(self, n_audio_file):
         """
         Combine and save recorded audio chunks into a single WAV file.
 
@@ -559,8 +621,7 @@ class TranscriptionTeeClient:
             for i in range(n_audio_file)
             if os.path.exists(f"chunks/{i}.wav")
         ]
-        # print(f'982108012801: {os.path}')
-        with wave.open(out_file, "wb") as wavfile:
+        with wave.open(self.output_recording_filename, "wb") as wavfile:
             wavfile: wave.Wave_write
             wavfile.setnchannels(self.channels)
             wavfile.setsampwidth(2)
@@ -575,6 +636,9 @@ class TranscriptionTeeClient:
                 # remove this file
                 os.remove(in_file)
         wavfile.close()
+        # clean up temporary directory to store chunks
+        if os.path.exists("chunks"):
+            shutil.rmtree("chunks")
 
     @staticmethod
     def bytes_to_float_array(audio_bytes):
@@ -593,6 +657,7 @@ class TranscriptionTeeClient:
         raw_data = np.frombuffer(buffer=audio_bytes, dtype=np.int16)
         return raw_data.astype(np.float32) / 32768.0
 
+
 class TranscriptionClient(TranscriptionTeeClient):
     """
     Client for handling audio transcription tasks via a single WebSocket connection.
@@ -605,6 +670,9 @@ class TranscriptionClient(TranscriptionTeeClient):
         port (int): The port number to connect to on the server.
         lang (str, optional): The primary language for transcription. Default is None, which defaults to English ('en').
         translate (bool, optional): Indicates whether translation tasks are required (default is False).
+        save_output_recording (bool, optional): Indicates whether to save recording from microphone.
+        output_recording_filename (str, optional): File to save the output recording.
+        output_transcription_path (str, optional): File to save the output transcription.
 
     Attributes:
         client (Client): An instance of the underlying Client class responsible for handling the WebSocket connection.
@@ -616,6 +684,26 @@ class TranscriptionClient(TranscriptionTeeClient):
         transcription_client()
         ```
     """
-    def __init__(self, host, port, lang=None, translate=False, model="small", use_vad=True):
-        self.client = Client(host, port, lang, translate, model, srt_file_path="output.srt", use_vad=use_vad)
-        TranscriptionTeeClient.__init__(self, [self.client])
+    def __init__(
+        self,
+        host,
+        port,
+        lang=None,
+        translate=False,
+        model="small",
+        use_vad=True,
+        save_output_recording=False,
+        output_recording_filename="./output_recording.wav",
+        output_transcription_path="./output.srt"
+    ):
+        self.client = Client(host, port, lang, translate, model, srt_file_path=output_transcription_path, use_vad=use_vad)
+        if save_output_recording and not output_recording_filename.endswith(".wav"):
+            raise ValueError(f"Please provide a valid `output_recording_filename`: {output_recording_filename}")
+        if not output_transcription_path.endswith(".srt"):
+            raise ValueError(f"Please provide a valid `output_transcription_path`: {output_transcription_path}. The file extension should be `.srt`.")
+        TranscriptionTeeClient.__init__(
+            self,
+            [self.client],
+            save_output_recording=save_output_recording,
+            output_recording_filename=output_recording_filename
+        )

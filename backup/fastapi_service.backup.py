@@ -15,14 +15,14 @@ import socketio
 import httpx
 import configparser
 from datetime import datetime, timedelta, timezone
-# from services.redis_core import RedisService
+# from services.redis.core import RedisService
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from util.redis_channel import RedisChannel
+from util.redis.channel import RedisChannel
 from models.schemas.fastapi import LoginInModel, QuanxiRequest    # 引入 LoginInModel
-from util.redis_core import RedisCore
-from util.socket_topic import SocketTopic
+from util.redis.core import RedisCore
+from util.socket.topic import SocketTopic
 
 
 # 獲取當前文件的絕對路徑
@@ -440,6 +440,8 @@ async def quanxi_analysis(
 def handle_message(channel, data_parsed):
     if channel == RedisChannel.tts_done_service:
         handle_tts_done_service(data_parsed)
+    # elif channel == RedisChannel.photo_taken:
+    #     self.handle_photo_taken(data_parsed)
 
 def handle_tts_done_service(data_parsed):
     emit_message(SocketTopic.docker_message, {'audioPath' : data_parsed['audio_path'], "text" : data_parsed['text']})
