@@ -1,4 +1,3 @@
-# run_service.py
 import asyncio
 import subprocess
 import sys
@@ -13,7 +12,14 @@ def run_service(service_name):
     services = get_services(ROOT_DIR, SERVICES_DIR)
     print(services)
 
-    if service_name in services:
+    if service_name == "all":
+        processes = []
+        for service_path in services.values():
+            process = subprocess.Popen([sys.executable, service_path])
+            processes.append(process)
+        for process in processes:
+            process.wait()
+    elif service_name in services:
         subprocess.run([sys.executable, services[service_name]])
     else:
         print(f"Service {service_name} not found.")
@@ -21,7 +27,7 @@ def run_service(service_name):
 if __name__ == "__main__":
     try:
         if len(sys.argv) != 2:
-            print("Usage: python run_service.py [service_name]")
+            print("Usage: python run_service.py [service_name|all]")
         else:
             run_service(sys.argv[1])
     except (SystemExit, KeyboardInterrupt, asyncio.CancelledError):

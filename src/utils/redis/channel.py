@@ -8,8 +8,14 @@ class RedisChannel:
     
     agent_question_count = 'agent-question-count'
     agent_mode = 'agent-mode'
+    conversation_id = 'conversation-id'
+    
+    
     do_agent_invoke = "do-agent-invoke"
     agent_invoke_done = "agent-invoke-done"
+    
+    do_ragflow_invoke = "do-ragflow-invoke"
+    ragflow_invoke_done = "ragflow-invoke-done"
     
     do_aikanshe_service = "do-aikanshe-service" # ai看舌
     photo_taken = 'photo-taken'

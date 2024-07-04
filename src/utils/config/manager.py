@@ -7,10 +7,10 @@ from .schema import (
     RedisSchema,
     MultiCommSchema,
     AIKanSheSchema,
+    RAGFlowSchema,
     ASR_ClientSchema,
     TTSSchema,
     AgentSchema,
-    RAGFlowSchema,
 )
 
 
@@ -31,7 +31,7 @@ class ConfigManager(object):
         self.redis = RedisSchema(self._config['Redis'])
         self.multicomm = MultiCommSchema(self._config['MultiComm'])
         self.aikanshe = AIKanSheSchema(self._config['AIKanShe'])
+        self.ragflow = RAGFlowSchema(self._config['RAGFlow'])
         self.asr_client = ASR_ClientSchema(self._config['ASR_Client'])
         self.tts = TTSSchema(self._config['TTS'])
         self.agent = AgentSchema(self._config['Agent'])
-        self.ragflow = RAGFlowSchema(self._config['RAGFlow'])

@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 import __init__
 import os
 from fastapi import APIRouter, FastAPI, HTTPException, Form, File, UploadFile
@@ -6,8 +7,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 from datetime import datetime, timezone
 
+from src.schemas.fastapi import CompletionModel
 from src.utils.log import logger
 from src.services.multi_comm_service.aikenshe_utils import get_new_token, get_token,  process_file
+from src.services.multi_comm_service.ragflow_utils import get_new_conversation, post_completion
+
 
 app = FastAPI()
 app.add_middleware(
@@ -124,4 +128,61 @@ async def quanxi_analysis_local_file(
     except Exception as e:
         logger.info(f"處理本地檔案發生錯誤: {e}")
         raise HTTPException(status_code=500, detail="Processing failed")
+
+
+@api_router.get("/get_new_conversation")
+async def get_new_conversation_api():
+    try:
+        data = await get_new_conversation()
+        return data
+    except Exception as e:
+        logger.info(f"新建對話失敗: {e}")
+        raise HTTPException(status_code=500, detail="Get new conversation failed")
+    
+
+# @api_router.post("/post_completion")
+# async def post_completion_api(message_content: str= Form(...)):
+#     try:
+#         print(message_content)
+#         data = await post_completion(message_content)
+#         return data
+#     except Exception as e:
+#         logger.info(f"送出對話失敗: {e}")
+#         raise HTTPException(status_code=500, detail="Post completion failed")
+@api_router.post("/post_completion")
+def post_completion_api(message_content: str = Form(...)):
+    try:
+        # print(message_content)
+        data = post_completion(message_content)
+        return data
+    except Exception as e:
+        logger.info(f"送出對話失敗: {e}")
+        raise HTTPException(status_code=500, detail="Post completion failed")
+
+# class MessageContent(BaseModel):
+#     message_content: str
+# @api_router.post("/get_answer")
+# def post_completion_api(message:MessageContent):
+#     import requests
+#     print(message)
+
+#     url = "http://localhost/v1/api/completion"
+#     headers = {
+#         "Authorization": "Bearer ragflow-k1M2NhZjU0Mzk2NDExZWY5YmVkMDI0Mm",
+#         "Content-Type": "application/json"
+#     }
+#     data = {
+#         "conversation_id": "0776ebca396511ef991a0242ac190003",
+#         "quote": True,
+#         "stream": False,
+#         "messages": [
+#             {
+#                 "role": "user",
+#                 "content": "最近一直咳嗽，可能是什麼原因，要怎麼改善?"
+#             }
+#         ]
+#     }
+
+#     response = requests.post(url, headers=headers, json=data)
+#     print(response.json())
 

@@ -32,8 +32,8 @@ cc = OpenCC(system_config.opencc_convert)  # Traditional Chinese to Simplified C
 
 # If root is main.py
 assets_file_path = {
-    "hparams_file_path": __init__.trim_path(os.path.join(__init__.SRC_DIR, tts_config.hparams_file_path)),
-    "checkpoint_path":  __init__.trim_path(os.path.join(__init__.SRC_DIR, tts_config.checkpoint_path)),
+    "hparams_file_path": __init__.trim_path(os.path.join(__init__.ROOT_DIR, tts_config.hparams_file_path)),
+    "checkpoint_path":  __init__.trim_path(os.path.join(__init__.ROOT_DIR, tts_config.checkpoint_path)),
 }
 
 @singleton
@@ -201,7 +201,7 @@ class VitsClass(cmd.Cmd):
        
         # 構建完整的文件路徑
         file_str = filename if filename else datetime.strftime(datetime.now(), '%Y-%m-%d-%H-%M-%S')
-        full_path = os.path.join(__init__.SRC_DIR, 'audio', f"{file_str}.wav")
+        full_path = os.path.join(__init__.ROOT_DIR, tts_config.create_wav_dir, f"{file_str}.wav")
 
         # 確保目錄存在
         os.makedirs(os.path.dirname(full_path), exist_ok=True)

@@ -44,6 +44,15 @@ class RedisCore:
     def setter(self, name, value):
         self._redis_client.set(name, value)
         logger.info(f'RedisCore set {name}: {value}')
+    def getter(self, name):
+        value =  self._redis_client.get(name)
+        if isinstance(value, bytes):
+            value = value.decode('utf-8')
+        logger.info(f'RedisCore get {name}: {value}')
+        return value
+    def deleter(self, name):
+        self._redis_client.delete(name)
+        logger.info(f'RedisCore delete {name}')
     
     def publisher(self, channel, data):
         if not isinstance(data, str):

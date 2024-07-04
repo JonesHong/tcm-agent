@@ -88,7 +88,7 @@ class WhisperLiveClass:
     def last_segment_handler(self, last_segment):
         simplified_text = cc.convert(last_segment['text'])
         last_segment['text'] = simplified_text
-        if system_config.mode == "test":
+        if system_config.mode == 'dev':
             logger.info(f"last_segment_subject: {last_segment['text']}")
         self.history_segments.append(last_segment)
 

@@ -18,6 +18,9 @@ class SystemSchema(ConfigSchema):
     @property
     def opencc_convert(self):
         return self._config_section.get('opencc_convert')
+    @property
+    def minimized_bat(self):
+        return self._config_section.getboolean('minimized_bat')
 
 class LogSchema(ConfigSchema):
     """
@@ -28,9 +31,6 @@ class LogSchema(ConfigSchema):
     @property
     def level(self):
         return self._config_section.get('level')
-    @property
-    def log_path(self):
-        return self._config_section.get('log_path')
     @property
     def rotation(self):
         return self._config_section.getint('rotation')
@@ -60,6 +60,9 @@ class MultiCommSchema(ConfigSchema):
     @property
     def port(self):
         return self._config_section.getint('port')
+    @property
+    def uploads_dir(self):
+        return self._config_section.get('uploads_dir')
 
 class AIKanSheSchema(ConfigSchema):
     """
@@ -73,6 +76,25 @@ class AIKanSheSchema(ConfigSchema):
     @property
     def password(self):
         return self._config_section.getint('password')
+    @property
+    def token_path(self):
+        return self._config_section.get('token_path')
+    @property
+    def base_url(self):
+        return self._config_section.get('base_url')
+
+class RAGFlowSchema(ConfigSchema):
+    """
+    [RAGFlow]
+    """
+    def __init__(self, config_section: SectionProxy) -> None:
+        super().__init__(config_section)
+    @property
+    def api_token(self):
+        return self._config_section.get('api_token')
+    @property
+    def base_url(self):
+        return self._config_section.get('base_url')
 
 class ASR_ClientSchema(ConfigSchema):
     """
@@ -135,6 +157,9 @@ class TTSSchema(ConfigSchema):
     @property
     def checkpoint_path(self):
         return self._config_section.get('checkpoint_path')
+    @property
+    def create_wav_dir(self):
+        return self._config_section.get('create_wav_dir')
 
 class AgentSchema(ConfigSchema):
     """
@@ -148,13 +173,3 @@ class AgentSchema(ConfigSchema):
     @property
     def model_name(self):
         return self._config_section.get('model_name')
-
-class RAGFlowSchema(ConfigSchema):
-    """
-    [RAGFlow]
-    """
-    def __init__(self, config_section: SectionProxy) -> None:
-        super().__init__(config_section)
-    @property
-    def api_token(self):
-        return self._config_section.get('api_token')

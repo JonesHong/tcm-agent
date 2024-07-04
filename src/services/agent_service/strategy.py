@@ -4,6 +4,7 @@ from src.services.agent_service.rag_chain import JiudaTizhi, ZhongyiShiwen, llm
 from src.utils.config.manager import ConfigManager
 from src.utils.redis.channel import RedisChannel
 from src.utils.redis.core import RedisCore
+from src.utils.log import logger
 from abc import ABC, abstractmethod
 
 config = ConfigManager()
@@ -22,7 +23,7 @@ class DiagnosticStrategy(InteractionStrategy):
         response = None
         condition = None
         
-        if system_config.mode == 'test':
+        if system_config.mode == 'dev':
             condition = (agent.sex == 'male' and agent.question_count >= 4) or (agent.sex == 'female' and agent.question_count >= 4)
         else:
             condition = (agent.sex == 'male' and agent.question_count >= 9) or (agent.sex == 'female' and agent.question_count >= 10)
@@ -100,7 +101,7 @@ class EvaluationAndAdvice(InteractionStrategy):
         jiuda_tizhi_response = JiudaTizhi({"input": f"根據知識庫。請分析文件，以下描述最接近哪幾種體質特徵(1~3種)?有什麼飲食上的建議?請用中文回答\n- - -\n{symptoms}"})
         response = jiuda_tizhi_response['answer']
         # logger.info(f'response: {response}')
-        agent.mode = AgentMode.SILENT # 之後要變成 INQUIRY 自由提問
+        agent.mode = AgentMode.INQUIRY # 之後要變成 INQUIRY 自由提問
         # response = llm.invoke(f"Chitchat response for input: {user_input}")
         agent.messages.append(response)
         
@@ -112,11 +113,13 @@ class EvaluationAndAdvice(InteractionStrategy):
 # Inquiry mode for general questions (自由提問模式)
 class InquiryStrategy(InteractionStrategy):
     def handle_interaction(self, agent, user_input):
+        print(user_input)
         # 自由提問模式的具體邏輯在這裡實現
         # 串接 RagFlow 使用大量額外資料，提供自由問答
-        response = llm.invoke(f"Chitchat response for input: {user_input}")
-        agent.messages.append(response)
-        return response
+        # response = llm.invoke(f"Chitchat response for input: {user_input}")
+        # agent.messages.append(response)
+        redis_core.publisher(RedisChannel.do_ragflow_invoke, user_input)
+        return None
 # Chitchat mode for casual conversation (閒聊模式)
 class ChitchatStrategy(InteractionStrategy):
     def handle_interaction(self, agent, user_input):

@@ -10,10 +10,20 @@ from src.schemas.fastapi import LoginInModel, QuanxiRequest
 from src.utils.config.manager import ConfigManager
 from src.utils.log import logger
 config = ConfigManager()
+multicomm_config = config.multicomm
 aikanshe_config = config.aikanshe
 
+# 定義 url_dict
+url_dict = {
+    "login": f"{aikanshe_config.base_url}account/login",
+    "get_user_key": f"{aikanshe_config.base_url}account/login?tokenKey=get",
+    "get_appkey": f"{aikanshe_config.base_url}user/getAppkey",
+    "update_appkey": f"{aikanshe_config.base_url}user/updateAppkey",
+    "add_appkey": f"{aikanshe_config.base_url}user/addAppkey",
+    "quanxi_analysis": f"{aikanshe_config.base_url}agency/quanxi"
+}
 # 定義 token 文件路徑
-TOKEN_FILE = os.path.join(__init__.ROOT_DIR, "src","data","json","token_info.json")
+TOKEN_FILE = os.path.join(__init__.ROOT_DIR, aikanshe_config.token_path)
 
 def save_token(token_data):
     logger.info("保存 token 資訊到本地文件")
@@ -53,7 +63,6 @@ def needs_refresh(token_data):
 async def get_new_token():
     try:
         logger.info("獲取新 token")
-        login_url = "https://api.aikanshe.com/account/login"
         headers = {"Content-Type": "application/json"}
         userKeyRes = await get_user_key()
         userKey = userKeyRes['data']['userKey']
@@ -67,7 +76,7 @@ async def get_new_token():
         ).model_dump()
         
         async with httpx.AsyncClient() as client:
-            response = await client.post(login_url, json=body, headers=headers)
+            response = await client.post(url_dict['login'], json=body, headers=headers)
             if response.status_code != 200:
                 raise HTTPException(status_code=response.status_code, detail="Login failed")
             data = response.json()
@@ -81,9 +90,8 @@ async def get_new_token():
 async def get_user_key():
     try:
         logger.info("獲取 user key")
-        url = "https://api.aikanshe.com/account/login?tokenKey=get"
         async with httpx.AsyncClient() as client:
-            response = await client.get(url)
+            response = await client.get(url_dict['get_user_key'])
             if response.status_code != 200:
                 raise HTTPException(status_code=response.status_code, detail="Failed to get user key")
             data = response.json()
@@ -96,13 +104,12 @@ async def get_latest_appkey():
     try:
         logger.info("獲取最新的 appkey")
         token_data = load_token()
-        appkey_url = "https://api.aikanshe.com/user/getAppkey"
         headers = {
             "appId":  token_data['data']['user']['uid'],
             "authorization": token_data['data']['jwt']
             }
         async with httpx.AsyncClient() as client:
-            response = await client.get(appkey_url, headers=headers)
+            response = await client.get(url_dict['get_appkey'], headers=headers)
             if response.status_code != 200:
                 await get_new_token()
                 raise HTTPException(status_code=response.status_code, detail="Failed to get appkey")
@@ -119,13 +126,12 @@ async def update_appkey(old_appkey):
     try:
         logger.info("更新 appkey")
         token_data = load_token()
-        update_url = "https://api.aikanshe.com/user/updateAppkey"
         headers = {"Authorization": f"Bearer {token_data['data']['jwt']}", "Content-Type": "application/json"}
         body = {
             "appkey": old_appkey
         }
         async with httpx.AsyncClient() as client:
-            response = await client.post(update_url, json=body, headers=headers)
+            response = await client.post(url_dict['update_appkey'], json=body, headers=headers)
             if response.status_code != 200:
                 raise HTTPException(status_code=response.status_code, detail="Failed to update appkey")
             return response.json()
@@ -136,14 +142,13 @@ async def update_appkey(old_appkey):
 async def add_appkey(authorization):
     try:
         logger.info("新增 appkey")
-        url = "https://api.aikanshe.com/user/addAppkey"
         headers = {
             "Content-Type": "application/json",
             "appId": aikanshe_config.appid,
             "authorization": authorization,
         }
         async with httpx.AsyncClient() as client:
-            response = await client.post(url, headers=headers)
+            response = await client.post(url_dict['add_appkey'], headers=headers)
             if response.status_code != 200:
                 raise HTTPException(status_code=response.status_code, detail="Failed to add appkey")
             data = response.json()
@@ -218,7 +223,7 @@ async def process_file(
     timestamp: Optional[str]
 ):
     try:
-        UPLOAD_DIR = os.path.join(__init__.SRC_DIR, "uploads")
+        UPLOAD_DIR = os.path.join(__init__.ROOT_DIR, multicomm_config.uploads_dir)
         QUANXI_DIR = os.path.join(UPLOAD_DIR, "quanxi")
         
         # UPLOAD_DIR = os.path.join(__init__.ROOT_DIR, "uploads")
@@ -237,7 +242,6 @@ async def process_file(
                     return {"message": "上傳的照片已存在且內容相同", "previous_result": previous_result}
 
         logger.info("開始全息舌像分析")
-        url = "https://api.aikanshe.com/agency/quanxi"
         headers = {
             "Authorization": f"Bearer {await get_token()}",
             "appId": aikanshe_config.appid
@@ -259,7 +263,7 @@ async def process_file(
         files = {"file": (filename, file_data, "application/octet-stream")}
         timeout = httpx.Timeout(30.0, read=30.0)  # 增加超時時間
         async with httpx.AsyncClient(timeout=timeout) as client:
-            response = await client.post(url, headers=headers, data=data, files=files)
+            response = await client.post(url_dict['quanxi_analysis'], headers=headers, data=data, files=files)
             if response.status_code != 200:
                 raise HTTPException(status_code=response.status_code, detail="Analysis failed")
             result = response.json()

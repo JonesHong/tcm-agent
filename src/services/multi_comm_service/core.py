@@ -5,8 +5,8 @@ import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import socketio
-from src.schemas._enum import AgentMode
-from src.schemas.fastapi import aikenshe_result_dict
+from src.services.multi_comm_service.ragflow_utils import post_completion
+from src.schemas._enum import AgentMode,AikensheResultDict
 from src.utils.config.manager import ConfigManager
 from src.utils.log import logger
 from src.utils.redis.core import RedisCore
@@ -34,6 +34,14 @@ socket_app = socketio.ASGIApp(sio, other_asgi_app=app)
 app.include_router(api_router)
 
 
+config = ConfigManager()
+channels = [
+    RedisChannel.vip_event,
+    RedisChannel.tts_service_done,
+    RedisChannel.do_aikanshe_service,
+    RedisChannel.photo_taken,
+    RedisChannel.do_ragflow_invoke,
+]
 def message_handler(channel, data_parsed):
     if channel == RedisChannel.vip_event:
         handle_vip_event(data_parsed)
@@ -43,7 +51,18 @@ def message_handler(channel, data_parsed):
         handle_do_aikanshe_service(data_parsed)
     elif channel == RedisChannel.photo_taken:
         handle_photo_taken(data_parsed)
+    elif channel == RedisChannel.do_ragflow_invoke:
+        handle_do_ragflow_invoke(data_parsed)
 
+redis_core = RedisCore(channels=channels,message_handler=message_handler)
+
+def handle_do_ragflow_invoke(data_parsed): 
+    response = post_completion(data_parsed)
+    print(response)
+    data = {"text":response['data']['answer'].replace('\n', '')}
+    
+    redis_core.publisher(RedisChannel.do_tts_service, data)
+    # pass
 def handle_vip_event(data_parsed): 
     """_summary_
     Args:
@@ -55,7 +74,7 @@ def handle_vip_event(data_parsed):
     """
     # sleep(1)
     global redis_core
-    agent_mode = redis_core._redis_client.get(RedisChannel.agent_mode)
+    agent_mode = redis_core.getter(RedisChannel.agent_mode)
     if data_parsed is None: return
     if data_parsed['type'] == 1  and (agent_mode == AgentMode.DIAGNOSTIC or agent_mode == AgentMode.EVALUATION_ADVICE or agent_mode == AgentMode.SILENT):
         """ 再見  """
@@ -128,7 +147,7 @@ async def process_local_file(age, male, file_path):
         extracted_info = []
         for key in keys_of_interest:
             if key in payload:
-                chinese_key = aikenshe_result_dict.get(key, key)
+                chinese_key = AikensheResultDict.get(key, key)
                 extracted_info.append(f"{chinese_key}建議: {remove_html_tags(payload[key])}")
         # 以句號隔開並合併為一個字串
         result_string = "。".join(extracted_info)
@@ -142,15 +161,6 @@ async def process_local_file(age, male, file_path):
     # logger.info(result)
     return result
 
-
-config = ConfigManager()
-channels = [
-    RedisChannel.vip_event,
-    RedisChannel.tts_service_done,
-    RedisChannel.do_aikanshe_service,
-    RedisChannel.photo_taken,
-]
-redis_core = RedisCore(channels=channels,message_handler=message_handler)
 
 
 # transformed_data = {"age": 30, "male": 1}    

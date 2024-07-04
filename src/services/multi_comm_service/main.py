@@ -22,7 +22,7 @@ def main():
     config = ConfigManager()
     multicomm_config = config.multicomm
     # aikanshe_config = config.aikanshe
-    uvicorn_config = uvicorn.Config(socket_app, host=multicomm_config.host, port=multicomm_config.port)
+    uvicorn_config = uvicorn.Config(socket_app, host=multicomm_config.host, port=multicomm_config.port,timeout_keep_alive=60)
     server = uvicorn.Server(uvicorn_config)
     
     loop = asyncio.get_event_loop()

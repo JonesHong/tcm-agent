@@ -24,19 +24,31 @@ from src.schemas._enum import LogLevelEnum
 
 from src.utils.config.manager import ConfigManager
 config = ConfigManager()
+system_config = config.system
 log_config = config.log
 log_path = os.path.join(SRC_DIR,'logs')
 
+# "<level>{time:YYYY-MM-DD HH:mm:ss} | {level}\t{process} | {file}:{function}:{line} - {message} </level>"
 logger_format = (
-    # "<level>{time:YYYY-MM-DD HH:mm:ss} | {level}\t{process} | {file}:{function}:{line} - {message} </level>"
     "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
     "<level>{level: <8}{process}</level> | "
-    "<cyan>{file}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
+    # "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
+    # "<cyan>{file}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
+    "<cyan>{extra[folder]}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
     "<level>{message}</level>"
 )
-_logger.configure(extra={})  # Default values
+if system_config.mode == 'dev':
+    logger_format = (
+    "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+    "<level>{level: <8}{process}</level> | "
+    # "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
+    # "<cyan>{file}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
+    "<cyan>{extra[folder]}</cyan>:<cyan>{file}</cyan>(<cyan>{name}</cyan>):<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
+    "<level>{message}</level>"
+    )
 def init_logger(level = log_config.level, log_path = log_path, process_id = "", rotation = f"{log_config.rotation}"):
     _logger.remove(0)
+    _logger.configure(extra={"folder": process_id})  # Default values
     _logger.add(
             f'{log_path}/[{process_id}]{datetime.now().strftime("%Y%m%d-%H%M%S")}.log', 
             format=logger_format, 

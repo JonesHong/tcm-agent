@@ -1,9 +1,11 @@
+import __init__
 import os
 import configparser
 
-CONFIG_PATH = 'config/config.ini'
-SCHEMA_PATH = 'src/utils/config/schema.py'
-MANAGER_PATH = 'src/utils/config/manager.py'
+# ROOT_DIR =  os.path.dirname(__file__)
+CONFIG_PATH = os.path.join(__init__.ROOT_DIR,'config','config.ini')
+SCHEMA_PATH = os.path.join(__init__.ROOT_DIR,'src','utils','config','schema.py')
+MANAGER_PATH = os.path.join(__init__.ROOT_DIR,'src','utils','config','manager.py')
 
 def read_config(config_path):
     try:

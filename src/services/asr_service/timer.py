@@ -42,6 +42,6 @@ class ResettableTimer:
 
     def _tick(self):
         while not self.stop_tick.is_set():
-            if system_config.mode == "test":
+            if system_config.mode == 'dev':
                 print("Tick")
                 time.sleep(1)

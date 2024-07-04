@@ -21,17 +21,17 @@ channels = [
 ]
 def message_handler(channel, data_parsed):
     if channel == RedisChannel.do_asr_service:
-        handle_do_asr_service(handle_do_asr_service)
+        handle_do_asr_service(data_parsed)
 
 def handle_do_asr_service(data_parsed):    
     try:
         state = data_parsed['state']
-        agent_question_count = redis_core._redis_client.get(RedisChannel.agent_mode)
+        agent_question_count = int(redis_core.getter(RedisChannel.agent_question_count))
         if state == 1 and agent_question_count > 0:
-            agent_mode = redis_core._redis_client.get(RedisChannel.agent_mode)
-            if agent_mode == AgentMode.DIAGNOSTIC or agent_mode == AgentMode.INQUIRY or agent_mode == AgentMode.CHITCHAT :
+            agent_mode = redis_core.getter(RedisChannel.agent_mode)
+            if agent_mode == AgentMode.DIAGNOSTIC.value or agent_mode == AgentMode.INQUIRY.value or agent_mode == AgentMode.CHITCHAT.value :
                 WhisperLive.connect()
-            elif agent_mode == AgentMode.TONGUE_DIAGNOSIS:
+            elif agent_mode == AgentMode.TONGUE_DIAGNOSIS.value:
                 redis_core.publisher(RedisChannel.do_agent_invoke,'開始舌診')
                 # agent.invoke('開始舌診')
         else:

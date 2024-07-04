@@ -36,4 +36,5 @@ def get_services(base_dir, services_dir):
         if os.path.isdir(service_path) and "main.py" in os.listdir(service_path):
             relative_path = os.path.join("src", "services", service_name, "main.py").replace("/", "\\")
             services[service_name] = relative_path
+    print(f"get_services: \n{services}\n")
     return services
