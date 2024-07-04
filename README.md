@@ -17,14 +17,6 @@ conda install -c conda-forge jupyter -y
 
 pip install -r agent-requirements.txt 
 
-# API Conda 
-<!-- conda env remove -n tcm-api -->
-conda update --all -y
-conda create -n  tcm-api  python=3.11 -y
-conda activate tcm-api
-conda install -c conda-forge jupyter -y
-
-pip install -r api-requirements.txt 
 
 
 <!-- 在windows -->
@@ -46,7 +38,7 @@ conda activate tcm-agent && python ./services/redis_service.py
 ## run asr_service.py
 conda activate tcm-agent && python ./services/asr_service.py 
 ## run aikenshe_service.py
-conda activate tcm-api && python ./services/aikenshe_service.py
+conda activate tcm-agent && python ./services/aikenshe_service.py
 
 
 ## run asr_service.py
@@ -58,3 +50,13 @@ docker run -d -p 51201:6379  --name 51201-redis -d --restart=always redis
 
 
 
+端口占用列表
+服务名称	端口
+Redis	51201
+AI Kan She	52045
+ASR Client	9091
+Whisper Live Server	9090
+Ragflow Server	443, 80, 9380
+Ragflow ES	1200
+Ragflow Minio	9000, 9001
+Ragflow Redis	(未指定)

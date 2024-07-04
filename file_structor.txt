@@ -1,0 +1,92 @@
+```markdown
+tcm-agent/
+├── src/
+│   ├── audio/ (tts create wav)
+│   ├── backup/ (old script, might be used)
+│   ├── chunks/ (asr record wav)
+│   ├── jupyter/ (testing by jupyter)
+│   ├── logs/
+│   │   
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── YunzeNeural/
+│   │   
+│   ├── packages/
+│   │   ├── __init__.py
+│   │   ├── ragflow/
+│   │   ├── vits/
+│   │   └── WhisperLive/
+│   │   
+│   ├── schemas/
+│   │   ├── fastapi.py
+│   │   ├── _enum.py
+│   │   └── __init__.py
+│   │   
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── ollama_keeper_service.py
+│   │   ├── agent_service/
+│   │   │   ├── agent.py
+│   │   │   ├── rag_chain.py
+│   │   │   ├── strategy.py
+│   │   │   ├── main.py
+│   │   │   └── __init__.py
+│   │   │
+│   │   ├── multi_comm_service/
+│   │   │   ├── aikenshe_utils.py
+│   │   │   ├── api.py
+│   │   │   ├── core.py
+│   │   │   ├── sio.py
+│   │   │   ├── main.py
+│   │   │   └── __init__.py
+│   │   │
+│   │   ├── tts_service/
+│   │   │   ├── vits.py
+│   │   │   ├── main.py
+│   │   │   └── __init__.py
+│   │   │
+│   │   └── asr_service/
+│   │       ├── whisper_live.py
+│   │       ├── timer.py
+│   │       ├── main.py
+│   │       └── __init__.py
+│   │   
+│   ├── uploads/
+│   │   └── quanxi/ (image and json for ai kan she)
+│   │   
+│   ├── util/
+│   │   ├── config/
+│   │   │   ├── generate_classes.py
+│   │   │   ├── manager.py
+│   │   │   ├── schemas.py
+│   │   │   └── __init__.py
+│   │   |
+│   │   ├── decorators/
+│   │   │   ├── singleton.py
+│   │   │   └── __init__.py
+│   │   |
+│   │   ├── log/
+│   │   │   ├── logger.py
+│   │   │   └── __init__.py
+│   │   |
+│   │   ├── redis/
+│   │   │   ├── core.py
+│   │   │   ├── channel.py
+│   │   │   └── __init__.py
+│   │   |
+│   │   └── socket/
+│   │       ├── topic.py
+│   │       └── __init__.py
+│   │   
+├── venv/ (or .venv/)
+│   │   
+├── config/
+│   ├── config.ini
+│   └── requirements.txt
+│       
+├── scripts/
+│   └── run_all_services.bat
+│       
+├── README.md
+└── .gitignore
+```

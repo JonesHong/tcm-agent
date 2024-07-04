@@ -1,0 +1,140 @@
+from enum import Enum
+
+class LogLevelEnum(Enum):
+    TRACE = "TRACE"
+    DEBUG = "DEBUG"
+    INFO = "INFO"
+    SUCCESS = "SUCCESS"
+    WARNING = "WARNING"
+    ERROR = "ERROR"
+    CRITICAL = "CRITICAL"
+    
+class AgentMode(Enum):
+    DIAGNOSTIC = "Diagnostic"  # Diagnostic mode for medical inquiry (問診模式")
+    TONGUE_DIAGNOSIS = "TongueDiagnosis"  # Tongue diagnosis mode for health assessment (舌診模式)
+    EVALUATION_ADVICE = "EvaluationAndAdvice"  # Evaluation and advice mode (評估和建議模式)
+    INQUIRY = "Inquiry"    # Inquiry mode for general questions (自由提問模式)
+    CHITCHAT = "Chitchat"      # Chitchat mode for casual conversation (閒聊模式)
+    SILENT = "Silent"  # Silent mode (沉默模式)
+
+
+AikensheResultDict = {
+    "age": "年齡",
+    "aijiu": "艾灸與按摩",
+    "bagang": "八綱辨證",
+    "bagangDesc": "八綱辨證描述",
+    "botai": "是否有剝苔0-否，1-是",
+    "botaiDesc": "剝苔描述",
+    "botaiMean": "剝苔診斷意義",
+    "chagndao": "腸道是否異常0-否，1-是",
+    "chagndaoDesc": "腸道描述",
+    "chagndaoMean": "腸道診斷意義",
+    "chihen": "是否有齒痕0-否，1-是",
+    "chihenDesc": "齒痕描述",
+    "chihenMean": "齒痕診斷意義",
+    "createTime": "檢測時間",
+    "dianci": "是否有點刺0-否，1-是",
+    "dianciDesc": "點刺描述",
+    "dianciMean": "點刺診斷意義",
+    "feel": "身體表現",
+    "fei": "肺是否異常0-否，1-是",
+    "feiDesc": "肺描述",
+    "feiMean": "肺診斷意義",
+    "food": "飲食調養",
+    "frontCamera": "boolean",
+    "gandan": "肝膽是否異常0-否，1-是",
+    "gandanDesc": "肝膽描述",
+    "gandanMean": "肝膽診斷意義",
+    "goods": "商品配置",
+    "id": "編號",
+    "isYuejin": "是否月經，0=否，1-是",
+    "liewen": "是否有裂紋0-否，1-是",
+    "liewenDesc": "裂紋描述",
+    "liewenMean": "裂紋診斷意義",
+    "life": "情志起居",
+    "male": "是否男性0=女，1-男",
+    "medical": "藥物治療",
+    "name": "姓名",
+    "nao": "大腦是否異常0-否，1-是",
+    "naoDesc": "大腦描述",
+    "naoMean": "大腦診斷意義",
+    "nuanchao": "卵巢是否異常0-否，1-是",
+    "nuanchaoDesc": "卵巢描述",
+    "nuanchaoMean": "卵巢診斷意義",
+    "pifu": "皮膚是否異常0-否，1-是",
+    "pifuDesc": "皮膚描述",
+    "pifuMean": "皮膚診斷意義",
+    "piwei": "脾胃是否異常0-否，1-是",
+    "piweiDesc": "脾胃描述",
+    "piweiMean": "脾胃診斷意義",
+    "qianliexian": "前列腺是否異常0-否，1-是",
+    "qianliexianDesc": "前列腺描述",
+    "qianliexianMean": "前列腺診斷意義",
+    "qiji": "氣機是否異常0-否，其他-是",
+    "qijiDesc": "氣機描述",
+    "qijiMean": "氣機診斷意義",
+    "qixiaoConfidence": "奇效描述置信度",
+    "qixiaoDesc": "奇效描述",
+    "recomand": "調理建議",
+    "roiImage": "截取舌頭圖片地址",
+    "ruxian": "乳腺是否異常0-否，1-是",
+    "ruxianDesc": "乳腺描述",
+    "ruxianMean": "乳腺診斷意義",
+    "score": "健康得分",
+    "scoreDesc": "健康得分說明",
+    "shemianConfidence": "舌色置信度",
+    "shemianDesc": "舌色描述",
+    "shemianName": "舌色類型",
+    "shen": "腎是否異常0-否，1-是",
+    "shenDesc": "腎描述",
+    "shenMean": "腎診斷意義",
+    "shexinConfidence": "舌型置信度",
+    "shexinDesc": "舌型描述",
+    "shexinName": "舌型類型",
+    "sport": "運動保健",
+    "symptom": "症狀名稱",
+    "symptomDesc": "症狀解釋",
+    "taiseConfidence": "苔色置信度",
+    "taiseDesc": "苔色描述",
+    "taiseName": "苔色類型",
+    "taizhiConfidence": "苔質置信度",
+    "taizhiDesc": "苔質描述",
+    "taizhiName": "苔質類型",
+    "tonguePicAddr": "標記圖片地址",
+    "typeConfidence": "體質置信度",
+    "typeId": "體質類型",
+    "typeName": "體質類型",
+    "uid": "uid",
+    "uploadPath": "原圖圖片地址",
+    "xinzang": "心臟是否異常0-否，1-是",
+    "xinzangDesc": "心臟描述",
+    "xinzangMean": "心臟診斷意義",
+    "yuban": "是否有瘀斑0-否，1-是",
+    "yubanDesc": "瘀斑描述",
+    "yubanMean": "瘀斑診斷意義",
+    "yudian": "是否有瘀點0-否，1-是",
+    "yudianDesc": "瘀點描述",
+    "yudianMean": "瘀點診斷意義",
+    "zhengxing": "中醫證型",
+    "zhengxingDesc": "中醫證型描述",
+    "zigon": "子宮是否異常0-否，1-是",
+    "zigonDesc": "子宮描述",
+    "zigonMean": "子宮診斷意義",
+    "meta": "元信息，包括狀態碼和返回消息",
+    "code": "狀態碼",
+    "msg": "返回消息",
+}
+    
+InterrogationDetails = {
+    "睡眠": "你的睡眠狀況如何？晚上好睡嗎？有沒有早醒或多夢的情況？是否固定時間會醒來？",
+    "胃口": "你最近食欲怎麼樣？會感覺餓嗎？有沒有特別想吃的食物或口味？胃口不好嗎？",
+    "大便": "大便情況如何？有便秘嗎？每天都有大便嗎？大便顏色和氣味如何？",
+    "小便": "小便顏色正常嗎？有頻尿或尿不出來的問題嗎？一天上幾次廁所？",
+    "口渴": "你經常覺得口渴嗎？渴的時候喜歡喝什麼溫度的水？不渴的時候會忘記喝水嗎？",
+    "寒熱": "你覺得身體是偏冷還是偏熱？手腳會不會冰冷？",
+    "汗": "你容易出汗嗎？晚上會盜汗嗎？會不會動不動就流汗或完全不出汗？",
+    "體力": "你最近精神狀況如何？感覺疲累嗎？早上起床精神好嗎？白天能集中精神嗎？",
+    "性功能": "你的性功能正常嗎？有沒有什麼問題？",
+    "月經": "月經情況怎麼樣？是準時還是會提前或延後？會痛嗎？有沒有生過小孩？"
+}
+QaList = ["睡眠", "胃口", "大便", "小便", "口渴", "寒熱", "汗", "體力", "性功能", "月經"]

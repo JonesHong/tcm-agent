@@ -1,0 +1,16 @@
+From minio(0.012679004983510822) 九大體質.txt/九大體質.txt
+naive_merge(九大體質.txt): 0.03549582901177928
+Chunkking(0.11531861900584772) 九大體質.txt/九大體質.txt
+MINIO PUT(九大體質.txt):0
+Build chunks(九大體質.txt): 0.11653842095984146
+Embedding elapsed(九大體質.txt): 5.17
+Indexing elapsed(九大體質.txt): 0.50
+Chunk doc(726222bc1a5a11ef910c0242ac170006), token(3428), chunks(17), elapsed:0.53
+From minio(0.010051988007035106) 中醫十問.txt/中醫十問.txt
+naive_merge(中醫十問.txt): 0.007433703984133899
+Chunkking(0.05482388200471178) 中醫十問.txt/中醫十問.txt
+MINIO PUT(中醫十問.txt):0
+Build chunks(中醫十問.txt): 0.05587729497347027
+Embedding elapsed(中醫十問.txt): 1.14
+Indexing elapsed(中醫十問.txt): 0.05
+Chunk doc(944123561a5a11efa17e0242ac170006), token(654), chunks(4), elapsed:0.11
