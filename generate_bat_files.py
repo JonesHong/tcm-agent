@@ -44,7 +44,7 @@ print("= Batch files created successfully.\n")
 # 生成 run_all_service.bat
 run_all_content = f'cd "{ROOT_DIR}"\n'
 for service_name in services.keys():
-    run_all_content += f'start {" /min" if minimized_bat else ""} "{service_name}" scripts\\{service_name}.bat\n'
+    run_all_content += f'start {" /min" if minimized_bat else ""} "tcm-{service_name.replace('_service','')}" scripts\\{service_name}.bat\n'
 
     # if minimized_bat:
     #     run_all_content += f'start /min "{service_name}" scripts\\{service_name}.bat\n'

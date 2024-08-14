@@ -59,7 +59,7 @@ redis_core = RedisCore(channels=channels,message_handler=message_handler)
 def handle_do_ragflow_invoke(data_parsed): 
     response = post_completion(data_parsed)
     print(response)
-    data = {"text":response['data']['answer'].replace('\n', '')}
+    data = {"text":response['data']['answer'].replace(' ','').replace('\n', ' ')}
     
     redis_core.publisher(RedisChannel.do_tts_service, data)
     # pass

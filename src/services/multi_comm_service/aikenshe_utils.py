@@ -70,7 +70,7 @@ async def get_new_token():
         body = LoginInModel(
             appId= aikanshe_config.appid,
             methodName="login",
-            password= aikanshe_config.password,
+            password= str(aikanshe_config.password),
             timestamp=timestamp,
             userKey=userKey
         ).model_dump()
@@ -104,22 +104,39 @@ async def get_latest_appkey():
     try:
         logger.info("獲取最新的 appkey")
         token_data = load_token()
+        if not token_data:
+            logger.error("無法加載 token 資料")
+            raise HTTPException(status_code=500, detail="Failed to load token data")
+        
         headers = {
-            "appId":  token_data['data']['user']['uid'],
+            "appId": token_data['data']['user']['uid'],
             "authorization": token_data['data']['jwt']
-            }
+        }
+        
         async with httpx.AsyncClient() as client:
             response = await client.get(url_dict['get_appkey'], headers=headers)
             if response.status_code != 200:
-                await get_new_token()
+                logger.error(f"API 請求失敗: {response.status_code} - {response.text}")
                 raise HTTPException(status_code=response.status_code, detail="Failed to get appkey")
+            
             data = response.json()
+            logger.info(f"API 回應數據: {json.dumps(data, indent=2, ensure_ascii=False)}")
+            
             if not data or 'data' not in data or not data['data']:
-                raise HTTPException(status_code=500, detail="Invalid response data from getAppkey API")
+                logger.error("API 回應數據無效或缺少 'data' 欄位")
+                raise HTTPException(status_code=401, detail="Invalid response data from getAppkey API")
+            
             latest_appkey = max(data['data'], key=lambda x: x['createTime'])['appkey']
             return latest_appkey
+    except HTTPException as e:
+        if e.status_code == 401:
+            logger.info("Token 無效或過期，重新獲取新 token")
+            new_token = await get_new_token()
+            return await get_latest_appkey()  # 使用新 token 再次嘗試獲取最新的 appkey
+        else:
+            raise e
     except Exception as e:
-        logger.info(f"獲取最新的 appkey 發生錯誤: {e}")
+        logger.error(f"獲取最新的 appkey 發生錯誤: {e}")
         raise HTTPException(status_code=500, detail="Failed to get latest appkey")
 
 async def update_appkey(old_appkey):
@@ -139,51 +156,57 @@ async def update_appkey(old_appkey):
         logger.info(f"更新 appkey 發生錯誤: {e}")
         raise HTTPException(status_code=500, detail="Failed to update appkey")
 
-async def add_appkey(authorization):
-    try:
-        logger.info("新增 appkey")
-        headers = {
-            "Content-Type": "application/json",
-            "appId": aikanshe_config.appid,
-            "authorization": authorization,
-        }
-        async with httpx.AsyncClient() as client:
-            response = await client.post(url_dict['add_appkey'], headers=headers)
-            if response.status_code != 200:
-                raise HTTPException(status_code=response.status_code, detail="Failed to add appkey")
-            data = response.json()
-            return data
-    except Exception as e:
-        logger.info(f"新增 appkey 發生錯誤: {e}")
-        raise HTTPException(status_code=500, detail="Failed to add appkey")
-
+# async def add_appkey(authorization):
+#     try:
+#         logger.info("新增 appkey")
+#         headers = {
+#             "Content-Type": "application/json",
+#             "appId": aikanshe_config.appid,
+#             "authorization": authorization,
+#         }
+#         async with httpx.AsyncClient() as client:
+#             response = await client.post(url_dict['add_appkey'], headers=headers)
+#             if response.status_code != 200:
+#                 raise HTTPException(status_code=response.status_code, detail="Failed to add appkey")
+#             data = response.json()
+#             return data
+#     except Exception as e:
+#         logger.info(f"新增 appkey 發生錯誤: {e}")
+#         raise HTTPException(status_code=500, detail="Failed to add appkey")
+    
 async def refresh_token():
     try:
         logger.info("刷新 token")
         old_appkey = await get_latest_appkey()
         await update_appkey(old_appkey)
         new_token = await get_new_token()
-        await add_appkey(f"Bearer {new_token}")
         return new_token
+    except HTTPException as e:
+        logger.error(f"刷新 token 發生錯誤: {e.detail}")
+        raise e
     except Exception as e:
-        logger.info(f"刷新 token 發生錯誤: {e}")
+        logger.error(f"刷新 token 發生錯誤: {e}")
         raise HTTPException(status_code=500, detail="Failed to refresh token")
-
+    
 async def get_token():
     try:
         token_data = load_token()
-        if is_token_valid(token_data):
+        if token_data and is_token_valid(token_data):
             logger.info("token 有效，使用現有的 token")
             return token_data['data']['jwt']
-        elif needs_refresh(token_data):
+        elif token_data and needs_refresh(token_data):
             logger.info("token 需要刷新")
             return await refresh_token()
         else:
             logger.info("token 無效，需要重新獲取新 token")
             return await get_new_token()
+    except HTTPException as e:
+        logger.error(f"獲取 token 發生錯誤: {e.detail}")
+        raise e
     except Exception as e:
-        logger.info(f"獲取 token 發生錯誤: {e}")
+        logger.error(f"獲取 token 發生錯誤: {e}")
         raise HTTPException(status_code=500, detail="Failed to get token")
+
 
 def are_files_identical(file1_data: bytes, file2_path: str) -> bool:
     try:
