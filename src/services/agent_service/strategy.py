@@ -117,7 +117,7 @@ class InquiryStrategy(InteractionStrategy):
         # 自由提問模式的具體邏輯在這裡實現
         # 串接 RagFlow 使用大量額外資料，提供自由問答
         # response = llm.invoke(f"Chitchat response for input: {user_input}")
-        # agent.messages.append(response)
+        agent.messages.append(user_input)
         redis_core.publisher(RedisChannel.do_ragflow_invoke, user_input)
         return None
 # Chitchat mode for casual conversation (閒聊模式)

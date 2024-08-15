@@ -1,4 +1,4 @@
-cd "c:\Users\User\Documents\work\tcm-agent"
+cd "c:\work\tcm-agent"
 start  "tcm-agent_service" scripts\agent_service.bat
 start  "tcm-asr_service" scripts\asr_service.bat
 start  "tcm-multi_comm_service" scripts\multi_comm_service.bat

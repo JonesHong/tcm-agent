@@ -3,9 +3,11 @@ cn2an==0.5.22
 librosa==0.10.2.post1
 opencc==1.1.7
 pooch==1.8.1
-torch==2.1.0+cu121
+# PyTorch, TorchAudio, TorchVision with CUDA 12.1
+torch==2.1.0+cu121 -f https://download.pytorch.org/whl/cu121/torch_stable.html
+torchaudio==2.1.0+cu121 -f https://download.pytorch.org/whl/cu121/torch_stable.html
+torchvision==0.16.0+cu121 -f https://download.pytorch.org/whl/cu121/torch_stable.html
 tbb==2021.11.0
-torchaudio==2.1.0+cu121
 reactivex==4.0.4
 idna==3.4
 packaging==24.0
@@ -18,7 +20,6 @@ annotated-types==0.6.0
 unidecode==1.3.8
 numpy==1.26.3
 redis==5.0.4
-torchvision==0.16.0+cu121
 pyyaml==6.0.1
 transformers==4.40.2
 multidict==6.0.5
@@ -37,6 +38,8 @@ pytz==2024.1
 inflect==7.2.1
 urllib3==1.26.13
 pydantic==2.7.1
+loguru
+python-multipart
 
 langchain
 langchain-community
@@ -47,7 +50,8 @@ fastapi
 httpx
 uvicorn
 python-socketio
-# 目前沒用到，但之後其他功能會用到先保留
+
+# Not used currently, but will be needed for other functions later, so keep it for now.
 
 # Cython==0.29.21
 # matplotlib==3.3.1

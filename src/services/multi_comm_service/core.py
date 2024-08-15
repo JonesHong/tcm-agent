@@ -56,12 +56,25 @@ def message_handler(channel, data_parsed):
 
 redis_core = RedisCore(channels=channels,message_handler=message_handler)
 
-def handle_do_ragflow_invoke(data_parsed): 
-    response = post_completion(data_parsed)
-    print(response)
-    data = {"text":response['data']['answer'].replace(' ','').replace('\n', ' ')}
+# def handle_do_ragflow_invoke(data_parsed): 
+#     response = post_completion(data_parsed)
+#     print(response)
+#     data = {"text":response['data']['answer'].replace(' ','').replace('\n', ' ')}
     
-    redis_core.publisher(RedisChannel.do_tts_service, data)
+#     redis_core.publisher(RedisChannel.do_tts_service, data)
+#     # pass
+
+def handle_do_ragflow_invoke(data_parsed): 
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        response = loop.run_until_complete(post_completion(data_parsed))
+        print(response)
+        data = {"text": response['data']['answer'].replace(' ', '').replace('\n', ' ')}
+        
+        redis_core.publisher(RedisChannel.do_tts_service, data)
+    finally:
+        loop.close()
     # pass
 def handle_vip_event(data_parsed): 
     """_summary_

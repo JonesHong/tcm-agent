@@ -15,7 +15,12 @@ conda create -n  tcm-agent  python=3.11 -y
 conda activate tcm-agent
 conda install -c conda-forge jupyter -y
 
-pip install -r agent-requirements.txt 
+pip install torch==2.1.0+cu121 -f https://download.pytorch.org/whl/cu121/torch_stable.html
+pip install torchaudio==2.1.0+cu121 -f https://download.pytorch.org/whl/cu121/torch_stable.html
+pip install torchvision==0.16.0+cu121 -f https://download.pytorch.org/whl/cu121/torch_stable.html
+
+
+pip install --no-cache-dir --requirement=config/requirements.txt 
 
 
 
@@ -39,12 +44,19 @@ conda activate tcm-agent && python ./services/redis_service.py
 conda activate tcm-agent && python ./services/asr_service.py 
 ## run aikenshe_service.py
 conda activate tcm-agent && python ./services/aikenshe_service.py
-
-
 ## run asr_service.py
 conda activate tcm-agent && python ./services/new_asr_service.py 
 
-
+## Ollama
+https://github.com/ollama/ollama
+ollama serve
+ollama run llama3.1:8b
+## RAGFlow
+git clone https://github.com/infiniflow/ragflow.git
+cd ragflow/docker
+docker compose up -d
+## WhisperLive
+docker run -it --gpus all -p 9090:9090 ghcr.io/collabora/whisperlive-gpu:latest
 ## Redis
 docker run -d -p 51201:6379  --name 51201-redis -d --restart=always redis
 

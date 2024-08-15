@@ -140,24 +140,24 @@ async def get_new_conversation_api():
         raise HTTPException(status_code=500, detail="Get new conversation failed")
     
 
-# @api_router.post("/post_completion")
-# async def post_completion_api(message_content: str= Form(...)):
-#     try:
-#         print(message_content)
-#         data = await post_completion(message_content)
-#         return data
-#     except Exception as e:
-#         logger.info(f"送出對話失敗: {e}")
-#         raise HTTPException(status_code=500, detail="Post completion failed")
 @api_router.post("/post_completion")
-def post_completion_api(message_content: str = Form(...)):
+async def post_completion_api(message_content: str= Form(...)):
     try:
-        # print(message_content)
-        data = post_completion(message_content)
+        print(message_content)
+        data = await post_completion(message_content)
         return data
     except Exception as e:
         logger.info(f"送出對話失敗: {e}")
         raise HTTPException(status_code=500, detail="Post completion failed")
+# @api_router.post("/post_completion")
+# def post_completion_api(message_content: str = Form(...)):
+#     try:
+#         # print(message_content)
+#         data = post_completion(message_content)
+#         return data
+#     except Exception as e:
+#         logger.info(f"送出對話失敗: {e}")
+#         raise HTTPException(status_code=500, detail="Post completion failed")
 
 # class MessageContent(BaseModel):
 #     message_content: str

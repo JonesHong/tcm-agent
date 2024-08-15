@@ -112,6 +112,7 @@ class AgentClass:
         redis_core.setter(RedisChannel.agent_question_count, self.__question_count)
 
     def invoke(self, user_input):
+        print(4654654646,user_input)
         return self.__strategy.handle_interaction(self, user_input)
 
 

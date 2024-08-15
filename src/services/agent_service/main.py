@@ -28,13 +28,19 @@ class AgentService(cmd.Cmd):
     def __init__(self):
         super().__init__()
         self._stop = False
+        if(config.agent.mode == AgentMode.CHITCHAT):
+            logger.info(f"AgentMode: {config.agent.mode }，使用通用模型進行回答")
+        else:
+            logger.info(f"AgentMode: {config.agent.mode }，使用RAGFlow進行回答")
 
     def default(self, line):
         logger.success(f"(user) {line}")  # 记录用户输入
-        response = llm.invoke(line)
-        logger.info(f"(llm) {response}")
-        # response = Agent.invoke(line)
-        # logger.info(f"(agent) {response}")
+        if(config.agent.mode== AgentMode.CHITCHAT):
+            response = llm.invoke(line)
+            logger.info(f"(llm) {response}")
+        else:
+            response = Agent.invoke(line)
+            logger.info(f"(agent) {response}")
 
     def do_exit(self, line):
         """Exit the interactive Agent."""
