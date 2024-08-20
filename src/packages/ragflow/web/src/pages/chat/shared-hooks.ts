@@ -1,13 +1,14 @@
-import { MessageType } from '@/constants/chat';
+import { MessageType, SharedFrom } from '@/constants/chat';
 import {
   useCreateSharedConversation,
   useFetchSharedConversation,
-} from '@/hooks/chatHooks';
-import { useSendMessageWithSse } from '@/hooks/logicHooks';
-import { useOneNamespaceEffectsLoading } from '@/hooks/storeHooks';
-import { IAnswer } from '@/interfaces/database/chat';
+} from '@/hooks/chat-hooks';
+import { useSendMessageWithSse } from '@/hooks/logic-hooks';
+import { useOneNamespaceEffectsLoading } from '@/hooks/store-hooks';
+import { IAnswer, Message } from '@/interfaces/database/chat';
 import api from '@/utils/api';
 import omit from 'lodash/omit';
+import trim from 'lodash/trim';
 import {
   Dispatch,
   SetStateAction,
@@ -56,7 +57,7 @@ export const useSelectCurrentSharedConversation = (conversationId: string) => {
 
   const ref = useScrollToBottom(currentConversation);
 
-  const addNewestConversation = useCallback((message: string) => {
+  const addNewestConversation = useCallback((message: Partial<Message>) => {
     setCurrentConversation((pre) => {
       return {
         ...pre,
@@ -64,14 +65,15 @@ export const useSelectCurrentSharedConversation = (conversationId: string) => {
           ...(pre.message ?? []),
           {
             role: MessageType.User,
-            content: message,
+            content: message.content,
+            doc_ids: message.doc_ids,
             id: uuid(),
           } as IMessage,
           {
             role: MessageType.Assistant,
             content: '',
             id: uuid(),
-            reference: [],
+            reference: {},
           } as IMessage,
         ],
       };
@@ -133,9 +135,13 @@ export const useSelectCurrentSharedConversation = (conversationId: string) => {
   };
 };
 
+export const useSendButtonDisabled = (value: string) => {
+  return trim(value) === '';
+};
+
 export const useSendSharedMessage = (
   conversation: IClientConversation,
-  addNewestConversation: (message: string) => void,
+  addNewestConversation: (message: Partial<Message>, answer?: string) => void,
   removeLatestMessage: () => void,
   setCurrentConversation: Dispatch<SetStateAction<IClientConversation>>,
   addNewestAnswer: (answer: IAnswer) => void,
@@ -150,7 +156,7 @@ export const useSendSharedMessage = (
 
   const sendMessage = useCallback(
     async (message: string, id?: string) => {
-      const res: Response = await send({
+      const res = await send({
         conversation_id: id ?? conversationId,
         quote: false,
         messages: [
@@ -162,12 +168,7 @@ export const useSendSharedMessage = (
         ],
       });
 
-      if (res?.status === 200) {
-        // const data = await fetchConversation(conversationId);
-        // if (data.retcode === 0) {
-        //   setCurrentConversation(data.data);
-        // }
-      } else {
+      if (res && (res?.response.status !== 200 || res?.data?.retcode !== 0)) {
         // cancel loading
         setValue(message);
         removeLatestMessage();
@@ -205,18 +206,31 @@ export const useSendSharedMessage = (
     }
   }, [answer, addNewestAnswer]);
 
-  const handlePressEnter = useCallback(() => {
-    if (done) {
-      setValue('');
-      addNewestConversation(value);
-      handleSendMessage(value.trim());
-    }
-  }, [addNewestConversation, done, handleSendMessage, setValue, value]);
+  const handlePressEnter = useCallback(
+    (documentIds: string[]) => {
+      if (trim(value) === '') return;
+      if (done) {
+        setValue('');
+        addNewestConversation({ content: value, doc_ids: documentIds });
+        handleSendMessage(value.trim());
+      }
+    },
+    [addNewestConversation, done, handleSendMessage, setValue, value],
+  );
 
   return {
     handlePressEnter,
     handleInputChange,
     value,
     loading: !done,
+  };
+};
+
+export const useGetSharedChatSearchParams = () => {
+  const [searchParams] = useSearchParams();
+
+  return {
+    from: searchParams.get('from') as SharedFrom,
+    sharedId: searchParams.get('shared_id'),
   };
 };

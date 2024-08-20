@@ -18,7 +18,7 @@ sys.path.insert(
     os.path.abspath(
         os.path.join(
             os.path.dirname(
-                os.path.abspath(__file__),
+                os.path.abspath(__file__)),
             '../../')))
 
 from deepdoc.vision.seeit import draw_box

@@ -5,9 +5,9 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-
-from . import commons
-from .modules import LayerNorm
+import commons
+import modules
+from modules import LayerNorm
    
 
 class Encoder(nn.Module):

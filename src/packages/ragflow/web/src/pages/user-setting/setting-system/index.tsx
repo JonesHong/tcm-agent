@@ -1,5 +1,5 @@
 import SvgIcon from '@/components/svg-icon';
-import { useFetchSystemStatus } from '@/hooks/userSettingHook';
+import { useFetchSystemStatus } from '@/hooks/user-setting-hooks';
 import { ISystemStatus, Minio } from '@/interfaces/database/userSetting';
 import { Badge, Card, Flex, Spin, Typography } from 'antd';
 import classNames from 'classnames';
@@ -7,7 +7,7 @@ import lowerCase from 'lodash/lowerCase';
 import upperFirst from 'lodash/upperFirst';
 import { useEffect } from 'react';
 
-import { toFixed } from '@/utils/commonUtil';
+import { toFixed } from '@/utils/common-util';
 import styles from './index.less';
 
 const { Text } = Typography;

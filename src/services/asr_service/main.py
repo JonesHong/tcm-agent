@@ -26,8 +26,9 @@ def message_handler(channel, data_parsed):
 def handle_do_asr_service(data_parsed):    
     try:
         state = data_parsed['state']
-        agent_question_count = int(redis_core.getter(RedisChannel.agent_question_count))
-        if state == 1 and agent_question_count > 0:
+        # agent_question_count = int(redis_core.getter(RedisChannel.agent_question_count))
+        # if state == 1  and agent_question_count > 0:
+        if state == 1:
             agent_mode = redis_core.getter(RedisChannel.agent_mode)
             if agent_mode == AgentMode.DIAGNOSTIC.value or agent_mode == AgentMode.INQUIRY.value or agent_mode == AgentMode.CHITCHAT.value :
                 WhisperLive.connect()

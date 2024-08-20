@@ -331,8 +331,8 @@ def get(file_id):
         e, file = FileService.get_by_id(file_id)
         if not e:
             return get_data_error_result(retmsg="Document not found!")
-
-        response = flask.make_response(MINIO.get(file.parent_id, file.location))
+        b, n = File2DocumentService.get_minio_address(file_id=file_id)
+        response = flask.make_response(MINIO.get(b, n))
         ext = re.search(r"\.([^.]+)$", file.name)
         if ext:
             if file.type == FileType.VISUAL.value:
@@ -343,5 +343,28 @@ def get(file_id):
                     'application/%s' %
                     ext.group(1))
         return response
+    except Exception as e:
+        return server_error_response(e)
+
+
+@manager.route('/mv', methods=['POST'])
+@login_required
+@validate_request("src_file_ids", "dest_file_id")
+def move():
+    req = request.json
+    try:
+        file_ids = req["src_file_ids"]
+        parent_id = req["dest_file_id"]
+        for file_id in file_ids:
+            e, file = FileService.get_by_id(file_id)
+            if not e:
+                return get_data_error_result(retmsg="File or Folder not found!")
+            if not file.tenant_id:
+                return get_data_error_result(retmsg="Tenant not found!")
+        fe, _ = FileService.get_by_id(parent_id)
+        if not fe:
+            return get_data_error_result(retmsg="Parent Folder not found!")
+        FileService.move_file(file_ids, parent_id)
+        return get_json_result(data=True)
     except Exception as e:
         return server_error_response(e)

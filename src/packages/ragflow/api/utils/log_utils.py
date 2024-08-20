@@ -187,7 +187,7 @@ class LoggerFactory(object):
                 if level >= LoggerFactory.LEVEL:
                     level_logger_name = logging._levelToName[level]
                     logger.addHandler(
-                        LoggerFactory.get_global_handler(level_logger_name, level, LoggerFactory.PARENT_LOG_DIR)
+                        LoggerFactory.get_global_handler(level_logger_name, level, LoggerFactory.PARENT_LOG_DIR))
 
 
 def setDirectory(directory=None):

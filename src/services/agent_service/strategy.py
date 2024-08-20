@@ -1,3 +1,4 @@
+import random
 import __init__
 from src.schemas._enum import AgentMode,QaList,InterrogationDetails
 from src.services.agent_service.rag_chain import JiudaTizhi, ZhongyiShiwen, llm
@@ -16,68 +17,49 @@ class InteractionStrategy(ABC):
     def handle_interaction(self, agent, user_input):
         pass
 
-      
+    
 # Diagnostic mode for medical inquiry (問診模式")
 class DiagnosticStrategy(InteractionStrategy):
     def handle_interaction(self, agent, user_input):
         response = None
-        condition = None
+
+        # 隨機從3到5之間選擇一個數字
+        num_questions = random.randint(3, 5)
+
+        # 從InterrogationDetails中隨機抽取num_questions個題目
+        selected_keys = random.sample(list(InterrogationDetails.keys()), num_questions)
         
-        if system_config.mode == 'dev':
-            condition = (agent.sex == 'male' and agent.question_count >= 4) or (agent.sex == 'female' and agent.question_count >= 4)
-        else:
-            condition = (agent.sex == 'male' and agent.question_count >= 9) or (agent.sex == 'female' and agent.question_count >= 10)
+        # 初始化一個列表來保存要詢問的問題
+        questions_to_ask = []
 
+        for key in selected_keys:
+            # 獲取對應的問診細節
+            interrogation_detail = InterrogationDetails[key]
+            questions_to_ask.append(interrogation_detail)
+
+            # 儲存這次問診的問題和回答的對應
+            agent.questions[key] = interrogation_detail
+
+        # 將選中的問題合併成一段話
+        combined_questions = " ".join(questions_to_ask)
+        
+        # 假設self_introduction是初始的自我介紹，已經在其他地方定義
         if agent.question_count == 0:
-            QaList
-            # self_introduction_response = SelfIntroduction({"input": "根據知識庫。請按照＂自我介紹.txt＂文件做自我介紹"})
-            # zhongyi_shiwen_response = ZhongyiShiwen({"input": "根據知識庫。中醫十問當中的第一問的問診細節是什麼?只要問診細節：後面的文字就好"})
-            # question_key = QaList[agent.question_count]
-            # agent.questions[question_key] = zhongyi_shiwen_response['answer']
-
-            # response = llm.invoke(f"請把以下兩句話請按照順序進行合併。第一句：{self_introduction_response['answer']}\n 接著讓我們來開始第一個問題 \n第二句：{zhongyi_shiwen_response['answer']}")
-            self_introduction= "您好，我是虛擬中醫師。問診對我非常重要。會根據您的回答，開出適合的處方。治療過程中，身體可能會出現一些反應，這是正常的請不用擔心。中醫治病是根據身體的症狀，而非西醫的檢驗報告，所以請詳細描述您的症狀，這樣才能幫助我為您提供最好的治療"
-            zhongyi_shiwen = "你的睡眠如何？是否一覺到天亮？是否每天定時會醒？如果會醒，是幾點會醒？是否多夢？"
-            response = f"{self_introduction}，接著讓我們來開始第一個問題。\n{zhongyi_shiwen}"
-        # elif (agent.sex == 'male' and agent.question_count >= 2) or (agent.sex == 'female' and agent.question_count >= 2):
-        elif (condition):
-            # 源邏輯，移去評估和建議了
-            # response = llm.invoke(f"請把以下幾段話請按照順序進行合併。\n第一句話: 接著讓我們進行舌診，請將舌頭伸出，配合畫面上的資訊 \n　第二句話: 我們會結合剛剛的問診和舌診給出評估和建議")
-            # response = f"接下是舌診，請將舌頭伸出，配合畫面上的指示。我們會結合剛剛的問診和舌診給出評估和建議"
-            # RedisCore.publisher(RedisChannel.do_aikanshe_service,'do ai kan she from Agent strategy.')
-            agent.mode = AgentMode.TONGUE_DIAGNOSIS 
-            response = f"接下來進行舌診，請將舌頭伸出，配合畫面上的指示。稍後我會結合問診和舌診給出評估和建議"
-            # agent.invoke('開始舌診')
-            # pass
+            # self_introduction = "您好，我是虛擬中醫師。問診對我非常重要。會根據您的回答，開出適合的處方。治療過程中，身體可能會出現一些反應，這是正常的請不用擔心。中醫治病是根據身體的症狀，而非西醫的檢驗報告，所以請詳細描述您的症狀，這樣才能幫助我為您提供最好的治療"
+            self_introduction = "您好，我是虛擬中醫師。問診對我非常重要。會根據您的回答，開出適合的處方。治療過程中，身體可能會出現一些反應，這是正常的請不用擔心。中醫治病是根據身體的症狀，而非西醫的檢驗報告，所以請詳細描述您的症狀，這樣才能幫助我為您提供最好的治療"
+            response = f"{self_introduction}。接下來讓我們開始問診。\n{combined_questions}"
         else:
-            # 儲存用戶回答
-            answer_key = QaList[agent.question_count - 1]
-            agent.answers[answer_key] = user_input
+            # 用LLM合併成一題去做詢問
+            llm_response = llm.invoke(f"請根據以下問題合併成一段自然的詢問。\n{combined_questions}")
+            response = llm_response
 
-            # 獲取下一個問題的問診細節
-            key = QaList[agent.question_count]
-            # zhongyi_shiwen_response = ZhongyiShiwen({"input": f"根據知識庫。中醫十問當中的{key}的問診細節是什麼?只要問診細節：後面的的文字就好"})
-            zhongyi_shiwen_response = InterrogationDetails[key]
-            # logger.info(agent.interrogation_details,key,zhongyi_shiwen_response)
-            
-            # 儲存問診問題
-            question_key = QaList[agent.question_count]
-            # agent.questions[question_key] = zhongyi_shiwen_response['answer']
-            agent.questions[question_key] = zhongyi_shiwen_response
-            # logger.info(agent.questions[question_key])
-            
+        # 將生成的問題添加到agent的消息記錄中
+        agent.messages.append(response)
 
-            # llm_response = llm.invoke(f"如果以下文字內容是正面的，請你回答＂好的，我知道了！＂；如果以下文字內容是負面的，請總結以下文字大概意思就好字數不超過二十字，並在最前面加上＂我了解你有(_總結後的文字_)的問題。＂。\n{user_input}")
-            # response = llm.invoke(f"請把以下幾段話請按照順序進行合併。 {llm_response} \n　接著讓我們來進行下一個問題 \n {zhongyi_shiwen_response['answer']}")
-            
-            llm_response = llm.invoke(f"請隊以下文字打分數(1~10)，分數越高代表越正面，反則為負面。如果以下文字內容是分數很高，請你回答＂好的，我知道了！＂；如果以下文字內容是分數很低，請總結以下文字大概意思就好字數不超過二十字，並在最前面加上＂我了解你有(_總結後的文字_)的問題。＂。\n{user_input}")
-            # response = f"{llm_response}接著讓我們來進行下一個問題。\n{zhongyi_shiwen_response['answer']}"
-            response = f"{llm_response}接著讓我們來進行下一個問題。\n{zhongyi_shiwen_response}"
-
+        # 增加問診的計數
         agent.question_count += 1
-        if response is not None:
-            agent.messages.append(response)
-            return response
+
+        return response
 
 # Tongue diagnosis mode for health assessment (舌診模式)
 class TongueDiagnosis(InteractionStrategy):

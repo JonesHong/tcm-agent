@@ -139,7 +139,7 @@ def handle_vip_event(data_parsed):
 
 def handle_asr_servicer_done(data_parsed):
     try:
-        if Agent.question_count != 0 or True :
+        # if Agent.question_count != 0 or True :
             asr_result = data_parsed['text']
             response = Agent.invoke(asr_result)
             redis_core.publisher(RedisChannel.do_asr_service, {"state":0})

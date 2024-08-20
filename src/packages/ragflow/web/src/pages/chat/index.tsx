@@ -41,10 +41,10 @@ import {
   useSelectFirstDialogOnMount,
 } from './hooks';
 
-import { useSetModalState, useTranslate } from '@/hooks/commonHooks';
-import { useSetSelectedRecord } from '@/hooks/logicHooks';
+import ChatOverviewModal from '@/components/api-service/chat-overview-modal';
+import { useSetModalState, useTranslate } from '@/hooks/common-hooks';
+import { useSetSelectedRecord } from '@/hooks/logic-hooks';
 import { IDialog } from '@/interfaces/database/chat';
-import ChatOverviewModal from './chat-overview-modal';
 import styles from './index.less';
 
 const { Text } = Typography;
@@ -353,15 +353,17 @@ const Chat = () => {
       </Flex>
       <Divider type={'vertical'} className={styles.divider}></Divider>
       <ChatContainer></ChatContainer>
-      <ChatConfigurationModal
-        visible={dialogEditVisible}
-        initialDialog={initialDialog}
-        showModal={showDialogEditModal}
-        hideModal={hideDialogEditModal}
-        loading={dialogSettingLoading}
-        onOk={onDialogEditOk}
-        clearDialog={clearDialog}
-      ></ChatConfigurationModal>
+      {dialogEditVisible && (
+        <ChatConfigurationModal
+          visible={dialogEditVisible}
+          initialDialog={initialDialog}
+          showModal={showDialogEditModal}
+          hideModal={hideDialogEditModal}
+          loading={dialogSettingLoading}
+          onOk={onDialogEditOk}
+          clearDialog={clearDialog}
+        ></ChatConfigurationModal>
+      )}
       <RenameModal
         visible={conversationRenameVisible}
         hideModal={hideConversationRenameModal}
@@ -369,11 +371,15 @@ const Chat = () => {
         initialName={initialConversationName}
         loading={conversationRenameLoading}
       ></RenameModal>
-      <ChatOverviewModal
-        visible={overviewVisible}
-        hideModal={hideOverviewModal}
-        dialog={currentRecord}
-      ></ChatOverviewModal>
+      {overviewVisible && (
+        <ChatOverviewModal
+          visible={overviewVisible}
+          hideModal={hideOverviewModal}
+          id={currentRecord.id}
+          name={currentRecord.name}
+          idKey="dialogId"
+        ></ChatOverviewModal>
+      )}
     </Flex>
   );
 };

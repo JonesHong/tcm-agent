@@ -13,7 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from flask import request, Response, jsonify
+from copy import deepcopy
+from flask import request, Response
 from flask_login import login_required
 from api.db.services.dialog_service import DialogService, ConversationService, chat
 from api.utils.api_utils import server_error_response, get_data_error_result, validate_request
@@ -117,11 +118,13 @@ def completion():
         if m["role"] == "assistant" and not msg:
             continue
         msg.append({"role": m["role"], "content": m["content"]})
+        if "doc_ids" in m:
+            msg[-1]["doc_ids"] = m["doc_ids"]
     try:
         e, conv = ConversationService.get_by_id(req["conversation_id"])
         if not e:
             return get_data_error_result(retmsg="Conversation not found!")
-        conv.message.append(msg[-1])
+        conv.message.append(deepcopy(msg[-1]))
         e, dia = DialogService.get_by_id(conv.dialog_id)
         if not e:
             return get_data_error_result(retmsg="Dialog not found!")

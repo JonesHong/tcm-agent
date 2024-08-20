@@ -107,12 +107,12 @@ class AgentClass:
         elif value > self.__question_count and value != self.__question_count + 1:
             logger.info(
                 f"請注意，此操作可能會導致問題被跳過。\n目前問題是關於:(問題{self.__question_count}){QaList[self.__question_count]}，你將跳到(問題{value}){QaList[value]}。")
-        self.__question_count = value
+        # self.__question_count = value
         
         redis_core.setter(RedisChannel.agent_question_count, self.__question_count)
 
     def invoke(self, user_input):
-        print(4654654646,user_input)
+        # print(4654654646,user_input)
         return self.__strategy.handle_interaction(self, user_input)
 
 

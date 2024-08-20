@@ -35,7 +35,7 @@ def get_project_base_directory(*args):
     if PROJECT_BASE is None:
         PROJECT_BASE = os.path.abspath(
             os.path.join(
-                os.path.dirname(os.path.realpath(__file__),
+                os.path.dirname(os.path.realpath(__file__)),
                 os.pardir,
                 os.pardir,
             )
@@ -51,7 +51,7 @@ def get_rag_directory(*args):
     if RAG_BASE is None:
         RAG_BASE = os.path.abspath(
             os.path.join(
-                os.path.dirname(os.path.realpath(__file__),
+                os.path.dirname(os.path.realpath(__file__)),
                 os.pardir,
                 os.pardir,
                 os.pardir,
@@ -156,7 +156,7 @@ def filename_type(filename):
         return FileType.PDF.value
 
     if re.match(
-             r".*\.(doc|docx|ppt|pptx|yml|xml|htm|json|csv|txt|ini|xls|xlsx|wps|rtf|hlp|pages|numbers|key|md|py|js|java|c|cpp|h|php|go|ts|sh|cs|kt|html)$", filename):
+             r".*\.(eml|doc|docx|ppt|pptx|yml|xml|htm|json|csv|txt|ini|xls|xlsx|wps|rtf|hlp|pages|numbers|key|md|py|js|java|c|cpp|h|php|go|ts|sh|cs|kt|html|sql)$", filename):
         return FileType.DOC.value
 
     if re.match(

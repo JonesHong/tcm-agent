@@ -17,41 +17,90 @@ from .embedding_model import *
 from .chat_model import *
 from .cv_model import *
 from .rerank_model import *
-
+from .sequence2txt_model import *
 
 EmbeddingModel = {
     "Ollama": OllamaEmbed,
+    "LocalAI": LocalAIEmbed,
     "OpenAI": OpenAIEmbed,
+    "Azure-OpenAI": AzureEmbed,
     "Xinference": XinferenceEmbed,
-    "Tongyi-Qianwen": DefaultEmbedding,#QWenEmbed,
+    "Tongyi-Qianwen": QWenEmbed,
     "ZHIPU-AI": ZhipuEmbed,
     "FastEmbed": FastEmbed,
     "Youdao": YoudaoEmbed,
     "BaiChuan": BaiChuanEmbed,
     "Jina": JinaEmbed,
-    "BAAI": DefaultEmbedding
+    "BAAI": DefaultEmbedding,
+    "Mistral": MistralEmbed,
+    "Bedrock": BedrockEmbed,
+    "Gemini": GeminiEmbed,
+    "NVIDIA": NvidiaEmbed,
+    "LM-Studio": LmStudioEmbed,
+    "OpenAI-API-Compatible": OpenAI_APIEmbed,
+    "cohere": CoHereEmbed,
+    "TogetherAI": TogetherAIEmbed,
+    "PerfXCloud": PerfXCloudEmbed,
+    "Upstage": UpstageEmbed,
+    "SILICONFLOW": SILICONFLOWEmbed,
+    "Replicate": ReplicateEmbed
 }
 
 
 CvModel = {
     "OpenAI": GptV4,
+    "Azure-OpenAI": AzureGptV4,
     "Ollama": OllamaCV,
     "Xinference": XinferenceCV,
     "Tongyi-Qianwen": QWenCV,
     "ZHIPU-AI": Zhipu4V,
-    "Moonshot": LocalCV
+    "Moonshot": LocalCV,
+    "Gemini": GeminiCV,
+    "OpenRouter": OpenRouterCV,
+    "LocalAI": LocalAICV,
+    "NVIDIA": NvidiaCV,
+    "LM-Studio": LmStudioCV,
+    "StepFun":StepFunCV,
+    "OpenAI-API-Compatible": OpenAI_APICV,
+    "TogetherAI": TogetherAICV,
+    "01.AI": YiCV,
+    "Tencent Hunyuan": HunyuanCV
 }
 
 
 ChatModel = {
     "OpenAI": GptTurbo,
+    "Azure-OpenAI": AzureChat,
     "ZHIPU-AI": ZhipuChat,
     "Tongyi-Qianwen": QWenChat,
     "Ollama": OllamaChat,
+    "LocalAI": LocalAIChat,
     "Xinference": XinferenceChat,
     "Moonshot": MoonshotChat,
     "DeepSeek": DeepSeekChat,
-    "BaiChuan": BaiChuanChat
+    "VolcEngine": VolcEngineChat,
+    "BaiChuan": BaiChuanChat,
+    "MiniMax": MiniMaxChat,
+    "Minimax": MiniMaxChat,
+    "Mistral": MistralChat,
+    "Gemini": GeminiChat,
+    "Bedrock": BedrockChat,
+    "Groq": GroqChat,
+    "OpenRouter": OpenRouterChat,
+    "StepFun": StepFunChat,
+    "NVIDIA": NvidiaChat,
+    "LM-Studio": LmStudioChat,
+    "OpenAI-API-Compatible": OpenAI_APIChat,
+    "cohere": CoHereChat,
+    "LeptonAI": LeptonAIChat,
+    "TogetherAI": TogetherAIChat,
+    "PerfXCloud": PerfXCloudChat,
+    "Upstage":UpstageChat,
+    "novita.ai": NovitaAIChat,
+    "SILICONFLOW": SILICONFLOWChat,
+    "01.AI": YiChat,
+    "Replicate": ReplicateChat,
+    "Tencent Hunyuan": HunyuanChat
 }
 
 
@@ -59,4 +108,20 @@ RerankModel = {
     "BAAI": DefaultRerank,
     "Jina": JinaRerank,
     "Youdao": YoudaoRerank,
+    "Xinference": XInferenceRerank,
+    "NVIDIA": NvidiaRerank,
+    "LM-Studio": LmStudioRerank,
+    "OpenAI-API-Compatible": OpenAI_APIRerank,
+    "cohere": CoHereRerank,
+    "TogetherAI": TogetherAIRerank,
+    "SILICONFLOW": SILICONFLOWRerank
+}
+
+
+Seq2txtModel = {
+    "OpenAI": GPTSeq2txt,
+    "Tongyi-Qianwen": QWenSeq2txt,
+    "Ollama": OllamaSeq2txt,
+    "Azure-OpenAI": AzureSeq2txt,
+    "Xinference": XinferenceSeq2txt
 }

@@ -1,0 +1,23 @@
+[
+    {
+        "name": "vits",
+        "url": "https://github.com/jaywalnut310/vits",
+        "lastUpdateTime": 0,
+        "releases": "",
+        "autoUpdate": true
+    },
+    {
+        "name": "WhisperLive",
+        "url": "https://github.com/collabora/WhisperLive",
+        "lastUpdateTime": 0,
+        "releases": "",
+        "autoUpdate": false
+    },
+    {
+        "name": "ragflow",
+        "url": "https://github.com/infiniflow/ragflow",
+        "lastUpdateTime": 1724141333000,
+        "releases": "v0.9.0",
+        "autoUpdate": true
+    }
+]
