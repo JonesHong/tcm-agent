@@ -173,3 +173,6 @@ class AgentSchema(ConfigSchema):
     @property
     def model_name(self):
         return self._config_section.get('model_name')
+    @property
+    def ollama_host(self):
+        return self._config_section.get('ollama_host')

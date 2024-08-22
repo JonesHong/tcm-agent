@@ -5,8 +5,14 @@ import time
 from datetime import datetime
 import pytz
 
+from src.utils.config.manager import ConfigManager
 __init__.logger_start(__file__)
 from src.utils.log import logger
+
+
+config = ConfigManager()
+agent_config = config.agent
+
 
 
 def get_bj_time():
@@ -15,10 +21,10 @@ def get_bj_time():
 
 def keep_model_alive():
     while True:
-        data = {"model": "llamafamily/llama3-chinese-8b-instruct", "keep_alive": "5m"}
+        data = {"model": agent_config.model_name, "keep_alive": "5m"}
         headers = {'Content-Type': 'application/json'}
         high_precision_time = time.perf_counter()
-        response = requests.post('http://localhost:11434/api/generate', json=data, headers=headers)
+        response = requests.post(f'{agent_config.ollama_host}/api/generate', json=data, headers=headers)
         high_precision_time_end = time.perf_counter()
         time_elapsed = high_precision_time_end - high_precision_time
         logger.info(f"高精度時間（精確到微秒）: {time_elapsed * 1000:.6f} ms")

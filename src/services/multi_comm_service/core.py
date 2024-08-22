@@ -69,12 +69,13 @@ def handle_do_ragflow_invoke(data_parsed):
     asyncio.set_event_loop(loop)
     try:
         response = loop.run_until_complete(post_completion(data_parsed))
-        print(response)
+        print(4564645,response)
         data = {"text": response['data']['answer'].replace(' ', '').replace('\n', ' ')}
         
         redis_core.publisher(RedisChannel.do_tts_service, data)
     finally:
-        loop.close()
+        print("finally")
+        # loop.close()
     # pass
 def handle_vip_event(data_parsed): 
     """_summary_

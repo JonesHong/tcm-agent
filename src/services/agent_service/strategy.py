@@ -106,7 +106,8 @@ class InquiryStrategy(InteractionStrategy):
 class ChitchatStrategy(InteractionStrategy):
     def handle_interaction(self, agent, user_input):
         # 閒聊模式的具體邏輯在這裡實現
-        response = llm.invoke(f"Chitchat response for input: {user_input}")
+        # response = llm.invoke(f"Chitchat response for input: {user_input}")
+        response = llm.stream(f"Chitchat response for input: {user_input}")
         agent.messages.append(response)
         return response
     
