@@ -176,3 +176,6 @@ class AgentSchema(ConfigSchema):
     @property
     def ollama_host(self):
         return self._config_section.get('ollama_host')
+    @property
+    def temperature(self):
+        return self._config_section.getfloat('temperature')

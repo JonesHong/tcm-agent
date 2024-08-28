@@ -42,14 +42,37 @@ class RedisCore:
             self.sub_thread.start()
         
     def setter(self, name, value):
+        original_value = value  # 存储原始的值
+
+        # 如果 value 不是 Redis 可以接受的类型，将其转换为字符串
+        if not isinstance(value, (str, bytes, int, float)):
+            try:
+                # 尝试将 value 转换为 JSON 字符串
+                value = json.dumps(value, ensure_ascii=False)
+            except (TypeError, ValueError) as e:
+                logger.error(f'Failed to convert value to JSON: {e}')
+                raise ValueError("Provided value is not serializable and cannot be stored in Redis.")
+        
         self._redis_client.set(name, value)
-        logger.info(f'RedisCore set {name}: {value}')
+        logger.info(f'RedisCore set {name}: {original_value}')  # 使用原始的值进行日志记录
+
     def getter(self, name):
-        value =  self._redis_client.get(name)
+        value = self._redis_client.get(name)
+        
         if isinstance(value, bytes):
             value = value.decode('utf-8')
-        logger.info(f'RedisCore get {name}: {value}')
+        # 尝试将字符串解析为字典
+        try:
+            # 如果 value 是 JSON 字符串，解析为字典
+            value = json.loads(value)
+        except (json.JSONDecodeError, TypeError):
+            # 如果解析失败，保持原始值
+            pass
+        
+        if value is not None:
+            logger.info(f'RedisCore get {name}: {value}')
         return value
+    
     def deleter(self, name):
         self._redis_client.delete(name)
         logger.info(f'RedisCore delete {name}')

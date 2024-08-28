@@ -54,7 +54,8 @@ ollama run llama3.1:8b
 ## RAGFlow
 git clone https://github.com/infiniflow/ragflow.git
 cd ragflow/docker
-docker compose up -d
+cd src\packages\ragflow\docker && docker-compose up -d
+
 ## WhisperLive
 docker run -it --gpus all -p 9090:9090 ghcr.io/collabora/whisperlive-gpu:latest
 ## Redis

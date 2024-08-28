@@ -49,8 +49,9 @@ async def get_new_conversation():
 async def post_completion(message_content, stream=None):
     try:
         # 從 Redis 中獲取 conversation_id，或創建一個新的
-        redis_conversation_id = redis_core.getter(RedisChannel.conversation_id)
-        conversation_id = redis_conversation_id if redis_conversation_id else await get_new_conversation()
+        # redis_conversation_id = redis_core.getter(RedisChannel.conversation_id)
+        # conversation_id = redis_conversation_id if redis_conversation_id else await get_new_conversation()
+        conversation_id =  await get_new_conversation()
 
         logger.info("送出訊息")
 
@@ -80,11 +81,18 @@ async def post_completion(message_content, stream=None):
                 }
             ]
         }
-
+        
+        # 打印當前的模式
+        if stream:
+            logger.info("当前模式: Stream 模式")
+        else:
+            logger.info("当前模式: 非 Stream 模式")
+            body['stream'] = False
+            
         logger.info(f"Request Body: {json.dumps(body, indent=2, ensure_ascii=False)}")
 
         async with httpx.AsyncClient() as client:
-            if stream is None or stream:  # 啟用 stream 模式
+            if  stream:  # 啟用 stream 模式
                 try:
                     async with client.stream("POST", url_dict['completion'], json=body, headers=headers, timeout=httpx.Timeout(10.0)) as response:
                         logger.info(f"Response Status Code: {response.status_code}")

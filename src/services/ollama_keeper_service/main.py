@@ -14,7 +14,6 @@ config = ConfigManager()
 agent_config = config.agent
 
 
-
 def get_bj_time():
     beijing_tz = pytz.timezone('Asia/Shanghai')
     return datetime.now(beijing_tz).strftime("%Y-%m-%d %H:%M:%S")
