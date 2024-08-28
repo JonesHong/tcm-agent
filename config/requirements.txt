@@ -45,6 +45,7 @@ langchain
 langchain-community
 langchainhub
 langchain-chroma
+langchain_ollama
 bs4
 fastapi
 httpx

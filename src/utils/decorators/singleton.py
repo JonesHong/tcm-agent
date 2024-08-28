@@ -73,7 +73,8 @@ def singleton(cls):
     instances = {}
 
     def get_instance(*args, **kwargs):
-        if cls not in instances:
+        reset = kwargs.pop('reset', False)  # 检查是否传递了 reset 参数
+        if cls not in instances or reset:
             instances[cls] = cls(*args, **kwargs)
         return instances[cls]
     
