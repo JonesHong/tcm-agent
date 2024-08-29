@@ -3,14 +3,14 @@ import __init__
 from src.schemas._enum import MessageType
 from src.utils.prompting.prompting_service import prompt_service_factory
 
-string_lenth_limit = 50
-user_prompt_prefix=f"以下整句話濃縮總結成一個不超過{string_lenth_limit}字的重點句子\n- - - -\n"
+string_length_limit = 50
+user_prompt_prefix=f"以下整句話濃縮總結成一個不超過{string_length_limit}字的重點句子\n- - - -\n"
 prompt_service_factory.create_prompt_service(
     name="summary",
     user_prompt_prefix=user_prompt_prefix,
     system_prompt=(
         MessageType.SYSTEM.value,
-        f"請將使用者的整句話濃縮總結成一個不超過{string_lenth_limit}字的重點句子。",
+        f"請將使用者的整句話濃縮總結成一個不超過{string_length_limit}字的重點句子。",
     ),
     example_prompts=[
         (

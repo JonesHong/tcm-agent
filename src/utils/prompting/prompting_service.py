@@ -7,6 +7,7 @@ from src.schemas._enum import MessageType
 from src.utils.decorators.inject_llm import inject_llm
 from src.utils.decorators.singleton import singleton
 
+
 @inject_llm(default_llm)
 class PromptServiceBase:
     def __init__(self, user_prompt_prefix=None, system_prompt=None, example_prompts=None, llm=None):

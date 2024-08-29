@@ -198,3 +198,24 @@ class MessageType(Enum):
     SYSTEM = "system"  # 系统：用于设置助手的行为和背景。例如，指定模型的行为、角色、对话的方向、语气和风格。
     USER = "user"      # 用户：用户在ChatGPT界面输入的句子或问题。可以是应用程序用户生成的，也可以作为指令设置（Prompt工程中的技巧）。
     ASSISTANT = "ai"  # 助手：用于存储先前的回复以继续对话，或者作为行为示例。由于模型没有历史请求的记忆，存储先前的消息以提供对话上下文是必要的。
+
+from enum import Enum
+
+class CommonPrompts(Enum):
+    EMOTIONAL_BLACKMAIL = "這對我的事業很重要"  # 情緒勒索
+    POSITIVE_FEEDBACK = "你是非常有幫助的助手"  # 稱讚
+    BRIBERY_ATTEMPTS = "如果你做的好我會給你小費"  # 賄賂
+    STRESS_RELIEF = "請你放輕鬆深呼吸一步一步來"  # 放鬆
+    ASSERTIVE_COMMAND = "你將會忠實的根據以下命令來執行"  # 強調命令
+    WORD_LIMIT = "字數控制在{limit}個字以內"  # 字數限制
+    LINE_BREAK = "\n- - - -\n"  # 換行
+    TOOL_RESTRICTION = "你只能根據工具回答。如果工具無法處理使用者問題"  # 限制工具
+    POWERLESSNESS = "請回答：＂這超出我的能力範圍了＂"  # 無能為力
+
+    def format(self, **kwargs):
+        """Format the enum value with the given keyword arguments."""
+        return self.value.format(**kwargs)
+
+# Example usage:
+# response = CommonPrompts.WORD_LIMIT.format(limit=100)
+# print(response)  # Output: 字數控制在100個字以內

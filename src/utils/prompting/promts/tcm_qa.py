@@ -3,8 +3,8 @@ import __init__
 from src.schemas._enum import MessageType
 from src.utils.prompting.prompting_service import prompt_service_factory
 
-string_lenth_limit = 150
-user_prompt_prefix = f"给出中医诊断和处方建议，字數控制在{string_lenth_limit}個字以內。\n- - - -\n"
+string_length_limit = 150
+user_prompt_prefix = f"给出中医诊断和处方建议，字數控制在{string_length_limit}個字以內。\n- - - -\n"
 prompt_service_factory.create_prompt_service(
     name="tcm_qa",
     user_prompt_prefix=user_prompt_prefix,

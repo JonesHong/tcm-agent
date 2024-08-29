@@ -15,3 +15,5 @@ ollama_llm = ChatOllama(
     base_url= agent_config.ollama_host
     # other params...
 )
+
+# ollama_llm.copy(True)
