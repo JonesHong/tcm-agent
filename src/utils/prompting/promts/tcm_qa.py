@@ -1,16 +1,16 @@
 import __init__
 
-from src.schemas._enum import MessageType
+from src.schemas._enum import CommonPrompts, MessageType
 from src.utils.prompting.prompting_service import prompt_service_factory
 
-string_length_limit = 150
-user_prompt_prefix = f"给出中医诊断和处方建议，字數控制在{string_length_limit}個字以內。\n- - - -\n"
+word_limit = 150
+user_prompt_prefix = f"给出中医诊断和处方建议，{CommonPrompts.WORD_LIMIT.format(limit=word_limit)}\n- - - -\n"
 prompt_service_factory.create_prompt_service(
     name="tcm_qa",
     user_prompt_prefix=user_prompt_prefix,
     system_prompt=(
         MessageType.SYSTEM.value,
-        f"你是一位虛擬中醫師，根據使用者提出的問題進行回覆。請結合中醫理論，提供具體的診斷、建議或治療方案，並盡量解釋症狀背後的中醫原理。",
+        f"你是一位虛擬中醫師，根據使用者提出的問題進行回覆。請結合中醫理論，提供具體的診斷、建議或治療方案，並盡量解釋症狀背後的中醫原理。{CommonPrompts.WORD_LIMIT.format(limit=word_limit)}",
     ),
     example_prompts=[
         (
@@ -69,17 +69,18 @@ prompt_service_factory.create_prompt_service(
 tcm_qa_agent = prompt_service_factory.tcm_qa
 
 # # 直接通过名称访问并使用服务
-# response_1 = tcm_qa_agent.invoke(
-#     "李某某，女，15岁。病起于外感，高热（39.5℃ ），头痛，肢体酸楚。至五六日后，突发上腹部疼痛，午后发热更甚，切脉弦紧有力，舌质红绛而苔腻，皮肤亢热，腹部板硬疼痛拒按，大便已七日未解，小便短赤，时发谵语。给出中医诊断和处方建议"
-# )
-# print("AI Response:", response_1.content)
+response_1 = tcm_qa_agent.invoke(
+    "李某某，女，15岁。病起于外感，高热（39.5℃ ），头痛，肢体酸楚。至五六日后，突发上腹部疼痛，午后发热更甚，切脉弦紧有力，舌质红绛而苔腻，皮肤亢热，腹部板硬疼痛拒按，大便已七日未解，小便短赤，时发谵语。给出中医诊断和处方建议"
+,measure_performance=True
+)
+print("AI Response:", response_1.content)
 
-# response_2 = tcm_qa_agent.invoke(
-#     "心跳最近總感覺慢一拍，胸口悶痛，大小便正常，最近因工作常熬夜"
-# )
-# print("AI Response:", response_2.content)
+response_2 = tcm_qa_agent.invoke(
+    "心跳最近總感覺慢一拍，胸口悶痛，大小便正常，最近因工作常熬夜",measure_performance=True
+)
+print("AI Response:", response_2.content)
 
 response_3 = tcm_qa_agent.invoke(
-    "黄连汤是什麼?有何效用?"
+    "黄连汤是什麼?有何效用?",measure_performance=True
 )
 print("AI Response:", response_3.content)

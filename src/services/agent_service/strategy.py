@@ -67,8 +67,6 @@ class DiagnosticStrategy(InteractionStrategy):
         return response
 
 # Tongue diagnosis mode for health assessment (舌診模式)
-
-
 class TongueDiagnosis(InteractionStrategy):
     def handle_interaction(self, agent, user_input):
         # logger.info(user_input)

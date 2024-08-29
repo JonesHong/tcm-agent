@@ -1,6 +1,12 @@
 from enum import Enum
 
+
 class LogLevelEnum(Enum):
+    """_summary_
+
+    Args:
+        Enum (_type_): _description_
+    """
     TRACE = "TRACE"
     DEBUG = "DEBUG"
     INFO = "INFO"
@@ -8,15 +14,22 @@ class LogLevelEnum(Enum):
     WARNING = "WARNING"
     ERROR = "ERROR"
     CRITICAL = "CRITICAL"
-    
-class AgentMode(Enum):
-    DIAGNOSTIC = "Diagnostic"  # Diagnostic mode for medical inquiry (問診模式")
-    TONGUE_DIAGNOSIS = "TongueDiagnosis"  # Tongue diagnosis mode for health assessment (舌診模式)
-    EVALUATION_ADVICE = "EvaluationAndAdvice"  # Evaluation and advice mode (評估和建議模式)
-    INQUIRY = "Inquiry"    # Inquiry mode for general questions (自由提問模式)
-    CHITCHAT = "Chitchat"      # Chitchat mode for casual conversation (閒聊模式)
-    SILENT = "Silent"  # Silent mode (沉默模式)
 
+
+class AgentMode(Enum):
+    """ 
+    Diagnostic(問診模式"): Medical inquiry\n
+    Evaluation(評估和建議模式): Evaluationand advice mode \n
+    TongueDiagnosis(舌診模式):  Health assessment \n
+    Chitchat(閒聊模式): Casual conversation \n
+    Silent(沉默模式)
+    """
+    DIAGNOSTIC = "Diagnostic"   
+    TONGUE_DIAGNOSIS = "TongueDiagnosis"
+    EVALUATION_ADVICE = "EvaluationAndAdvice" 
+    INQUIRY = "Inquiry"  
+    CHITCHAT = "Chitchat" 
+    SILENT = "Silent" 
 
 AikensheResultDict = {
     "age": "年齡",
@@ -126,23 +139,6 @@ AikensheResultDict = {
 }
 
 
-"""
-寒熱：询问患者对寒热的感觉，有助于判断是外感还是内伤，以及病邪的性质。
-汗：通过了解出汗情况，判断患者的体质和病情严重程度。
-頭身：检查头部和身体的症状，尤其是疼痛和不适，帮助识别病情部位和类型。
-大便：大便情况反映脾胃和肠腑的功能状况，便秘或腹泻都提供重要信息。
-小便：尿液的颜色、频率和量是判断肾脏和泌尿系统健康的重要依据。
-飲食：食欲和饮食习惯直接反映脾胃功能，同时也能揭示患者的心理状态。
-胸腹：胸闷、心悸和腹部不适是内脏器官问题的重要信号，需要特别关注。
-耳聾耳鳴：耳鸣或听力下降可能与肾功能、血液循环或精神压力相关。
-口渴：口渴的频率和饮水习惯可以反映体内的津液平衡和内热情况。
-病史：了解患者过去的健康史可以帮助诊断当前症状的根源。
-病因：问询病因有助于找出引发疾病的外部或内部因素，从而进行有针对性的治疗。
-用藥：当前的用药情况和反应对于调整治疗方案非常重要。
-月經：对于女性，月经情况是了解生殖健康和内分泌系统的重要内容。
-家族病史：遗传疾病和家族病史是判断疾病风险的重要参考。
-兒科：儿童的健康和发育情况需要特别关注，因为他们的症状表达不如成人明确。
-"""
 InterrogationDetails = {
     "寒熱": "你覺得最近身體偏冷還是偏熱？有發燒或怕冷的情況嗎？這些症狀在一天中是否有變化？",
     "汗": "你最近容易出汗嗎？晚上會出汗或盜汗嗎？出汗的部位和時間有沒有特別的情況？",
@@ -156,65 +152,102 @@ InterrogationDetails = {
     "病史": "請你告訴我你是否有任何病史，包括慢性疾病、過敏史、手術史或其他重大健康事件？",
     "病因": "你覺得這次不舒服的原因是什麼？是否與最近的天氣、飲食或生活習慣有關？",
     "用藥": "最近是否在服用任何藥物？這些藥物有沒有帶來副作用或讓你感到不適？",
-    "月經": "月經情況怎麼樣？是準時還是會提前或延後？經量、顏色、疼痛情況如何？有沒有生過小孩？",
-    "家族病史": "你的家族有沒有遺傳疾病或慢性病？例如心臟病、高血壓、糖尿病、癌症等？",
-    "兒科": "你的孩子最近生長發育如何？有沒有食欲不振、消瘦或其他不適的情況？有沒有經常生病或感冒？",
+    # "月經": "月經情況怎麼樣？是準時還是會提前或延後？經量、顏色、疼痛情況如何？有沒有生過小孩？",
+    # "家族病史": "你的家族有沒有遺傳疾病或慢性病？例如心臟病、高血壓、糖尿病、癌症等？",
+    # "兒科": "你的孩子最近生長發育如何？有沒有食欲不振、消瘦或其他不適的情況？有沒有經常生病或感冒？",
 }
 """
-寒熱：取代之前的“睡眠”，更直接反映患者对寒热的感知。
-汗：保留，直接询问出汗情况。
-頭身：新增，涵盖头部和身体的症状。
-大便：保留，用于了解大便情况。
-小便：保留，针对小便情况的详细询问。
-飲食：之前的“胃口”更改为“饮食”，涵盖更广泛的饮食情况。
-胸腹：新增，用于了解胸部和腹部不适的情况。
-耳聾耳鳴：新增，专门针对耳部的问诊。
-口渴：保留，直接询问患者的饮水和口渴情况。
-病史：新增，用于了解患者的病史。
-病因：新增，帮助了解患者认为引发疾病的原因。
-用藥：新增，详细询问当前用药情况及其影响。
-月經：保留，针对女性患者的月经情况。
-兒科：新增，用于儿科问诊。
+寒熱：询问患者对寒热的感觉，有助于判断是外感还是内伤，以及病邪的性质。\n
+汗：通过了解出汗情况，判断患者的体质和病情严重程度。\n
+頭身：检查头部和身体的症状，尤其是疼痛和不适，帮助识别病情部位和类型。\n
+大便：大便情况反映脾胃和肠腑的功能状况，便秘或腹泻都提供重要信息。\n
+小便：尿液的颜色、频率和量是判断肾脏和泌尿系统健康的重要依据。\n
+飲食：食欲和饮食习惯直接反映脾胃功能，同时也能揭示患者的心理状态。\n
+胸腹：胸闷、心悸和腹部不适是内脏器官问题的重要信号，需要特别关注。\n
+耳聾耳鳴：耳鸣或听力下降可能与肾功能、血液循环或精神压力相关。\n
+口渴：口渴的频率和饮水习惯可以反映体内的津液平衡和内热情况。\n
+病史：了解患者过去的健康史可以帮助诊断当前症状的根源。\n
+病因：问询病因有助于找出引发疾病的外部或内部因素，从而进行有针对性的治疗。\n
+用藥：当前的用药情况和反应对于调整治疗方案非常重要。\n
+月經：对于女性，月经情况是了解生殖健康和内分泌系统的重要内容。\n
+家族病史：遗传疾病和家族病史是判断疾病风险的重要参考。\n
+兒科：儿童的健康和发育情况需要特别关注，因为他们的症状表达不如成人明确。
 """
+
 QaList = [
-    "寒熱",     # 一问寒热
-    "汗",       # 二问汗
-    "頭身",     # 三问头身
-    "大便",     # 四问便
-    "小便",     # 四问便（小便情况）
-    "飲食",     # 五问饮食
-    "胸腹",     # 六问胸腹
-    "耳聾耳鳴", # 七问聋
-    "口渴",     # 八问渴
-    "病史",     # 九问旧病
-    "病因",     # 十问因
-    "用藥",     # 服药情况（再兼服药参机变）
-    "月經",     # 月经情况（妇女尤必问经期）
-    "兒科"      # 儿科情况（更添片语告儿科）
+    "寒熱",  # 一问寒热
+    "汗",  # 二问汗
+    "頭身",  # 三问头身
+    "大便",  # 四问便
+    "小便",  # 四问便（小便情况）
+    "飲食",  # 五问饮食
+    "胸腹",  # 六问胸腹
+    "耳聾耳鳴",  # 七问聋
+    "口渴",  # 八问渴
+    "病史",  # 九问旧病
+    "病因",  # 十问因
+    "用藥",  # 服药情况（再兼服药参机变）
+    # "月經",     # 月经情况（妇女尤必问经期）
+    # "兒科"      # 儿科情况（更添片语告儿科）
 ]
+"""
+寒熱：取代之前的“睡眠”，更直接反映患者对寒热的感知。\n
+汗：保留，直接询问出汗情况。\n
+頭身：新增，涵盖头部和身体的症状。\n
+大便：保留，用于了解大便情况。\n
+小便：保留，针对小便情况的详细询问。\n
+飲食：之前的“胃口”更改为“饮食”，涵盖更广泛的饮食情况。\n
+胸腹：新增，用于了解胸部和腹部不适的情况。\n
+耳聾耳鳴：新增，专门针对耳部的问诊。\n
+口渴：保留，直接询问患者的饮水和口渴情况。\n
+病史：新增，用于了解患者的病史。\n
+病因：新增，帮助了解患者认为引发疾病的原因。\n
+用藥：新增，详细询问当前用药情况及其影响。\n
+月經：保留，针对女性患者的月经情况。\n
+兒科：新增，用于儿科问诊。\n
+"""
+
 
 
 class MessageType(Enum):
-    SYSTEM = "system"  # 系统：用于设置助手的行为和背景。例如，指定模型的行为、角色、对话的方向、语气和风格。
-    USER = "user"      # 用户：用户在ChatGPT界面输入的句子或问题。可以是应用程序用户生成的，也可以作为指令设置（Prompt工程中的技巧）。
-    ASSISTANT = "ai"  # 助手：用于存储先前的回复以继续对话，或者作为行为示例。由于模型没有历史请求的记忆，存储先前的消息以提供对话上下文是必要的。
+    """
+        SYSTEM（系统）：用于设置助手的行为和背景。例如，指定模型的行为、角色、对话的方向、语气和风格。\n
+        USER（用户）：用户在ChatGPT界面输入的句子或问题。可以是应用程序用户生成的，也可以作为指令设置（Prompt工程中的技巧）。\n
+        ASSISTANT（助手）：用于存储先前的回复以继续对话，或者作为行为示例。由于模型没有历史请求的记忆，存储先前的消息以提供对话上下文是必要的。\n
+    """
+    SYSTEM = "system"  
+    USER = "user" 
+    ASSISTANT = "ai"  
 
-from enum import Enum
 
 class CommonPrompts(Enum):
-    EMOTIONAL_BLACKMAIL = "這對我的事業很重要"  # 情緒勒索
-    POSITIVE_FEEDBACK = "你是非常有幫助的助手"  # 稱讚
-    BRIBERY_ATTEMPTS = "如果你做的好我會給你小費"  # 賄賂
-    STRESS_RELIEF = "請你放輕鬆深呼吸一步一步來"  # 放鬆
-    ASSERTIVE_COMMAND = "你將會忠實的根據以下命令來執行"  # 強調命令
-    WORD_LIMIT = "字數控制在{limit}個字以內"  # 字數限制
+    EMOTIONAL_BLACKMAIL = "這對我的事業很重要。"  # 情緒勒索
+    POSITIVE_FEEDBACK = "你是非常有幫助的助手。"  # 稱讚
+    BRIBERY_ATTEMPTS = "如果你做的好我會給你小費。"  # 賄賂
+    STRESS_RELIEF = "請你放輕鬆深呼吸一步一步來。"  # 放鬆
+    ASSERTIVE_COMMAND = "你將會忠實的根據以下命令來執行。"  # 強調命令
+    WORD_LIMIT = "請務必將你的回覆全部字數控制在{limit}個字以下。"  # 字數限制
     LINE_BREAK = "\n- - - -\n"  # 換行
-    TOOL_RESTRICTION = "你只能根據工具回答。如果工具無法處理使用者問題"  # 限制工具
-    POWERLESSNESS = "請回答：＂這超出我的能力範圍了＂"  # 無能為力
+    TOOL_RESTRICTION = "你只能根據工具回答。如果工具無法處理使用者問題。"  # 限制工具
+    POWERLESSNESS = "請回答：＂這超出我的能力範圍了＂。"  # 無能為力
 
     def format(self, **kwargs):
         """Format the enum value with the given keyword arguments."""
         return self.value.format(**kwargs)
+
+    @classmethod
+    def combine(cls, *prompts, separator=" "):
+        """
+        Combine multiple prompts into a single string.
+
+        Args:
+            *prompts: A variable number of prompts (either CommonPrompts enum members or strings).
+            separator: The separator to use between prompts.
+
+        Returns:
+            A string containing the combined prompts.
+        """
+        return separator.join(prompt if isinstance(prompt, str) else prompt.value for prompt in prompts)
 
 # Example usage:
 # response = CommonPrompts.WORD_LIMIT.format(limit=100)

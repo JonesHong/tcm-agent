@@ -12,8 +12,8 @@ def add(x: int, y: int) -> int:
 
 ollama_llm_copy = ollama_llm.copy(deep=True).bind_tools([add])
 # ollama_llm_copy
-# string_length_limit = 150
-# user_prompt_prefix = f"字數控制在{string_length_limit}個字以內。\n- - - -\n"
+# word_limit = 150
+# user_prompt_prefix = f"字數控制在{word_limit}個字以內。\n- - - -\n"
 prompt_service_factory.create_prompt_service(
     name="tcm_qa",
     # user_prompt_prefix=user_prompt_prefix,
