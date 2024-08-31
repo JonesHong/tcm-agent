@@ -1,7 +1,7 @@
 import __init__
 
 from src.schemas._enum import CommonPrompts, MessageType
-from src.utils.prompting.prompting_service import prompt_service_factory
+from src.utils.prompting.prompt_service_factory import prompt_service_factory
 user_prompt_prefix = (
     # f"{CommonPrompts.ASSERTIVE_COMMAND.value}"
     "請根據以下對話內容進行仔細分析，逐步檢查和嚴謹驗證後，最後只顯示簡答結果。\n"

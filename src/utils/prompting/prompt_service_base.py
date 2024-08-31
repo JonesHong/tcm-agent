@@ -1,3 +1,4 @@
+import __init__
 import time
 import copy
 from typing import Dict, Iterator, List, Literal, Tuple, Union
@@ -5,19 +6,18 @@ from typing import Dict, Iterator, List, Literal, Tuple, Union
 from langchain_core.messages.base import BaseMessage, BaseMessageChunk
 from opencc import OpenCC
 from reactivex import Subject, create
-from reactivex.operators import first
-from src.services.agent_service.ollama_llm import ollama_llm as default_llm
 from src.schemas._enum import MessageType
 from src.utils.decorators.inject_llm import inject_llm
-from src.utils.decorators.singleton import singleton
 from src.utils.log import logger
 from src.utils.config.manager import ConfigManager
-
+from src.services.agent_service.ollama_llm import ollama_llm as default_llm
 
 config = ConfigManager()
 system_config = config.system
 
 cc = OpenCC(system_config.opencc_convert)
+
+
 @inject_llm(default_llm)
 class PromptServiceBase:
     """
@@ -30,6 +30,7 @@ class PromptServiceBase:
         system_prompt (str, optional): 系統提示。默認為 None。
         example_prompts (List[Tuple[str, str]], optional): 提供示例提示列表。
         llm (ChatOllama, optional): 用於生成提示的LLM（大語言模型）。預設從 ollama_llm載入
+        factory (PromptServiceFactory, optional): 提供中央歷史管理的工廠。默認為 None。
     """
 
     def __init__(
@@ -38,19 +39,23 @@ class PromptServiceBase:
         system_prompt=None,
         example_prompts=None,
         llm=None,
+        factory=None,
     ):
-        self.__chunk_subject = Subject()  # 用於單個chunk的 Subject
-        self.__content_collector_subject = Subject()  # 用於累加chunk的 Subject
         self.user_prompt_prefix = user_prompt_prefix
         self.system_prompt = system_prompt
         self.example_prompts = example_prompts or []
         self.llm = llm if llm else default_llm
-        self.initial()
+        self.factory = factory  # 保存工厂的引用
+        self.reset()
 
-    def initial(self):
+    def reset(self):
         """重置歷史消息列表"""
+        self.__chunk_subject = Subject()  # 用於單個chunk的 Subject
+        self.__content_collector_subject = Subject()  # 用於累加chunk的 Subject
         self.value = None
-        self._messages_history = []  # 初始化历史消息列表
+        self._messages_history: List[Tuple[Literal["user", "ai", "system"]]] = (
+            []
+        )  # 初始化历史消息列表
 
     @property
     def messages_list_proto(self):
@@ -59,13 +64,15 @@ class PromptServiceBase:
             [self.system_prompt] if self.system_prompt else []
         ) + self.example_prompts
 
-    def assemble_messages(self, user_input: Union[str, List[Tuple[str, str]]]):
+    def assemble_messages(
+        self, user_input: Union[str, List[Tuple[Literal["user", "ai", "system"], str]]]
+    ):
         """
         組合最終的消息列表，將用戶輸入添加到歷史消息中。
 
         Args:
-            user_input (Union[str, List[Tuple[str, str]]]): 用戶輸入，可以是字符串或列表格式。
-        
+            user_input (Union[str, List[Tuple[Literal['user', 'ai', 'system'], str]]]): 用戶輸入，可以是字符串或列表格式。
+
         Returns:
             List: 最終組合的消息列表。
         """
@@ -78,11 +85,15 @@ class PromptServiceBase:
                 f"{self.user_prompt_prefix or ''}{user_input}",
             )
             new_messages_list.append(new_entry)
+            self.add_to_history(new_entry)
         elif isinstance(user_input, list):
             new_messages_list.extend(user_input)
+            # 将列表中的每个消息添加到历史记录
+            for entry in user_input:
+                self.add_to_history(entry)
 
         # 将新输入的消息添加到历史记录中
-        self.add_to_history(new_messages_list[-1])
+        # self.add_to_history(new_messages_list[-1])
         return new_messages_list
 
     def _log_performance(self, response_content: str, start_time: float):
@@ -230,20 +241,38 @@ class PromptServiceBase:
         """允許外部訂閱content_collector_subject"""
         return self.__content_collector_subject.subscribe(observer)
 
-    def add_to_history(self, message):
-        """將消息添加到歷史記錄中"""
+    def add_to_history(
+        self, message: List[Tuple[Literal["user", "ai", "system"], str]]
+    ):
+        """將消息添加到歷史記錄中，並更新到工廠的集中歷史中"""
         self._messages_history.append(message)
+        if self.factory:
+            self.factory.add_to_history(message)
 
     @property
     def messages_history_list(self):
         """返回消息歷史記錄的列表"""
         return self._messages_history
 
+    def format_messages_history_list(self) -> str:
+        formatted_dialogue = "歷史對話紀錄\n- - -  START - - -\n"
+        for speaker, message in self._messages_history:
+            formatted_dialogue += f"{speaker}: {message}\n"
+        formatted_dialogue += "- - - END - - - -"
+        return formatted_dialogue
+
+    def format_dialogue_history(dialogue: list) -> str:
+        formatted_dialogue = "歷史對話紀錄\n- - -  START - - -\n"
+        for speaker, message in dialogue:
+            formatted_dialogue += f"{speaker}: {message}\n"
+        formatted_dialogue += "- - - END - - - -"
+        return formatted_dialogue
+
     def test_examples(
         self,
         examples: List[str],
         method: Literal["invoke", "stream", "stream_with_rx"] = "invoke",
-        measure_performance: bool = False
+        measure_performance: bool = False,
     ):
         """
         测试多个示例，使用指定的方法和性能测量选项。
@@ -260,104 +289,27 @@ class PromptServiceBase:
                 response = self.invoke(example, measure_performance=measure_performance)
                 print(f"AI Response: {response.content}")
             elif method == "stream":
-                for chunk in self.stream(example, measure_performance=measure_performance):
+                for chunk in self.stream(
+                    example, measure_performance=measure_performance
+                ):
                     print(f"Chunk: {chunk.content}")
                 print("Completed stream.")
             elif method == "stream_with_rx":
+
                 def handle_test_examples(result):
                     # print(result)
-                    if result['done']:
-                        print(result['content'])
-                subscriptions = self.subscribe_to_content_collector(handle_test_examples)
+                    if result["done"]:
+                        print(result["content"])
+
+                subscriptions = self.subscribe_to_content_collector(
+                    handle_test_examples
+                )
                 self.stream_with_rx(example, measure_performance=measure_performance)
-                # for chunk in:
-                # print(f"Chunk: {chunk.content}")
                 subscriptions.dispose()
                 print("Completed stream with Rx.")
             else:
-                raise ValueError("Unsupported method. Choose from 'invoke', 'stream', or 'stream_with_rx'.")
+                raise ValueError(
+                    "Unsupported method. Choose from 'invoke', 'stream', or 'stream_with_rx'."
+                )
 
             print("\n")  # 在每个测试示例之间插入空行
-
-@singleton
-class PromptServiceFactory:
-    """
-    工廠類，用於創建和管理多個 PromptServiceBase 實例。
-
-    Attributes:
-        _services (dict): 存儲所有創建的 PromptServiceBase 實例。
-    """
-
-    def __init__(self):
-        self._services: Dict[str, PromptServiceBase] = {}
-
-    def create_prompt_service(
-        self,
-        name: str,
-        user_prompt_prefix: str = None,
-        system_prompt: str = None,
-        example_prompts: List[Tuple[str, str]] = None,
-        llm=None,
-    ) -> PromptServiceBase:
-        """
-        創建一個新的 PromptServiceBase 實例並存儲在 _services 字典中。
-
-        Args:
-            name (str): 服務名稱。
-            user_prompt_prefix (str, optional): 用戶提示前綴。默認為 None。
-            system_prompt (str, optional): 系統提示。默認為 None。
-            example_prompts (List[Tuple[str, str]], optional): 示例提示列表。默認為 None。
-            llm (optional): 指定的大語言模型。默認為 None。
-
-        Returns:
-            PromptServiceBase: 創建的 PromptServiceBase 實例。
-        """
-        service = PromptServiceBase(
-            user_prompt_prefix, system_prompt, example_prompts, llm
-        )
-        self._services[name] = service
-        return service
-
-    def remove_prompt_service(self, name: str):
-        """
-        移除指定名稱的 PromptServiceBase 實例。
-
-        Args:
-            name (str): 服務名稱。
-
-        Raises:
-            AttributeError: 當指定的服務名稱不存在時拋出。
-        """
-        if name in self._services:
-            del self._services[name]
-        else:
-            raise AttributeError(f"Service '{name}' does not exist.")
-
-    def clear(self):
-        self._services.clear()
-    def reset(self):
-        """重置所有存儲的 PromptServiceBase 實例。"""
-        for service in self._services.values():
-            service.initial()
-        self._services.clear()
-
-    def __getattr__(self, name) -> PromptServiceBase:
-        """
-        獲取指定名稱的 PromptServiceBase 實例。
-
-        Args:
-            name (str): 服務名稱。
-
-        Raises:
-            AttributeError: 當指定的服務名稱不存在時拋出。
-
-        Returns:
-            PromptServiceBase: 對應的 PromptServiceBase 實例。
-        """
-        if name in self._services:
-            return self._services[name]
-        raise AttributeError(f"'PromptServiceFactory' object has no attribute '{name}'")
-
-
-# 使用工厂生成不同的 PromptService 实例
-prompt_service_factory = PromptServiceFactory()

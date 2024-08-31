@@ -1,7 +1,7 @@
 import __init__
 from random import randint
 from src.schemas._enum import CommonPrompts, MessageType
-from src.utils.prompting.prompting_service import prompt_service_factory
+from src.utils.prompting.prompt_service_factory import prompt_service_factory
 
 # 定義 user_prompt_prefix
 user_prompt_prefix = (
@@ -11,7 +11,7 @@ user_prompt_prefix = (
 )
 
 prompt_service_factory.create_prompt_service(
-    name="greeting",
+    name="farewell",
     user_prompt_prefix=user_prompt_prefix,
     system_prompt=(
         MessageType.SYSTEM.value,
@@ -51,7 +51,7 @@ prompt_service_factory.create_prompt_service(
     # llm=
 )
 
-greeting_agent = prompt_service_factory.greeting
+farewell_agent = prompt_service_factory.farewell
 """
 ## 簡介
 此 `agent` 專注於告別內容變化，無視使用者的其他話題。
@@ -70,16 +70,16 @@ def add_radom():
 
 # 驗證效果
 # message_1 = f"{add_radom()}再見"
-# response_1 = greeting_agent.invoke(message_1,measure_performance=True)
+# response_1 = farewell_agent.invoke(message_1,measure_performance=True)
 # print("message:", message_1)
 # print("AI Response:", response_1.content,"\n")
 
 # message_2 = f"{add_radom()}今天天氣如何"
-# response_2 = greeting_agent.invoke(message_2,measure_performance=True)
+# response_2 = farewell_agent.invoke(message_2,measure_performance=True)
 # print("message:", message_2)
 # print("AI Response:", response_2.content,"\n")
 
 # message_3 = f"{add_radom()}台灣和中國的關係"
-# response_3 = greeting_agent.invoke(message_3,measure_performance=True)
+# response_3 = farewell_agent.invoke(message_3,measure_performance=True)
 # print("message:", message_3)
 # print("AI Response:", response_3.content,"\n")

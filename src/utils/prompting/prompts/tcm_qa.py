@@ -1,7 +1,7 @@
 import __init__
 
 from src.schemas._enum import CommonPrompts, MessageType
-from src.utils.prompting.prompting_service import prompt_service_factory
+from src.utils.prompting.prompt_service_factory import prompt_service_factory
 
 word_limit = 150
 user_prompt_prefix = f"如果使用者對話內容是除了中醫範圍以外的內容，請嘗試糾正、引導他回到中醫範疇；如果是中醫範疇，請给出中医诊断和处方建议，{CommonPrompts.WORD_LIMIT.format(limit=word_limit)}\n- - - -\n"
@@ -89,4 +89,4 @@ examples = [
     "台灣跟中國的關係是什麼?"
 ]
 
-tcm_qa_agent.test_examples(examples=examples,method="invoke", measure_performance=True)
+# tcm_qa_agent.test_examples(examples=examples,method="invoke", measure_performance=True)

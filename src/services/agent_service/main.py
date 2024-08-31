@@ -7,7 +7,7 @@ import sys
 import cmd
 
 from src.schemas._enum import AgentMode
-from src.services.agent_service.agent import Agent
+from src.services.agent_service.agent import agent
 from src.services.agent_service.rag_chain import llm
 from src.utils.config.manager import ConfigManager
 from src.utils.log import logger, uvicorn_init_config
@@ -19,11 +19,11 @@ __init__.logger_start()
 # Initialize logger configuration
 uvicorn_init_config()
 
-# agent = Agent
+# agent = agent
 # llm = llm
 # InteractiveAgent
 class AgentService(cmd.Cmd):
-    intro = 'Welcome to the interactive Agent. Type help or ? to list commands.\n'
+    intro = 'Welcome to the interactive agent. Type help or ? to list commands.\n'
     prompt = 'Question: '
     def __init__(self):
         super().__init__()
@@ -39,12 +39,12 @@ class AgentService(cmd.Cmd):
             response = llm.invoke(line)
             logger.info(f"(llm) {response}")
         else:
-            response = Agent.invoke(line)
+            response = agent.invoke(line)
             logger.info(f"(agent) {response}")
 
     def do_exit(self, line):
-        """Exit the interactive Agent."""
-        logger.info('Exiting the interactive Agent.')
+        """Exit the interactive agent."""
+        logger.info('Exiting the interactive agent.')
         self._stop = True
         return True
 
@@ -102,22 +102,22 @@ def handle_vip_event(data_parsed):
     """
     try:
         if data_parsed is None: return
-        if data_parsed['type'] == 0  and (Agent.mode == AgentMode.DIAGNOSTIC or Agent.mode == AgentMode.SILENT): 
+        if data_parsed['type'] == 0  and (agent.mode == AgentMode.DIAGNOSTIC or agent.mode == AgentMode.SILENT): 
             """ 打招呼  """
-            Agent.initial()
-            Agent.user_info_from_yolo = data_parsed['data']
-            age_range = Agent.user_info_from_yolo['age']
+            agent.initial()
+            agent.user_info_from_yolo = data_parsed['data']
+            age_range = agent.user_info_from_yolo['age']
             min_age, max_age = map(int, age_range.strip('()').split('-'))
             median_age = math.floor((min_age + max_age) / 2)
-            gender = Agent.user_info_from_yolo['gender']
+            gender = agent.user_info_from_yolo['gender']
             male = 0 if gender == 'Female' else 1
-            Agent.transformed_data = {
+            agent.transformed_data = {
                 'age': median_age,
                 'male': male
             }
-            Agent.sex = data_parsed['data']['gender'].lower()
+            agent.sex = data_parsed['data']['gender'].lower()
             
-            response = Agent.invoke('你好')
+            response = agent.invoke('你好')
             message = {"text": response}
             redis_core.publisher(RedisChannel.do_tts_service, message)
         elif data_parsed['type'] == 1:
@@ -129,8 +129,8 @@ def handle_vip_event(data_parsed):
             response_list = [simple_response, detailed_response]
 
             message = {"text": random.choice(response_list)}
-            Agent.initial()
-            # self.Agent.question_count = None
+            agent.initial()
+            # self.agent.question_count = None
             redis_core.publisher(RedisChannel.do_tts_service, message)
             # redis_core.publisher(RedisChannel.do_asr_service, {"state": 0})
             # emit_message
@@ -140,9 +140,9 @@ def handle_vip_event(data_parsed):
 
 def handle_asr_servicer_done(data_parsed):
     try:
-        # if Agent.question_count != 0 or True :
+        # if agent.question_count != 0 or True :
             asr_result = data_parsed['text']
-            response = Agent.invoke(asr_result)
+            response = agent.invoke(asr_result)
             redis_core.publisher(RedisChannel.do_asr_service, {"state":0})
             
             if response != '' and response is not None:
@@ -153,18 +153,18 @@ def handle_asr_servicer_done(data_parsed):
 
 def handle_aikanshe_service_done(data_parsed):
     try:
-        if Agent.mode != AgentMode.EVALUATION_ADVICE:
-            Agent.mode = AgentMode.EVALUATION_ADVICE
-            # Agent.invoke(f'開始評估和診斷')
+        if agent.mode != AgentMode.EVALUATION_ADVICE:
+            agent.mode = AgentMode.EVALUATION_ADVICE
+            # agent.invoke(f'開始評估和診斷')
             if data_parsed != '':
-                Agent.invoke(f'舌診結果如下：{data_parsed}')
+                agent.invoke(f'舌診結果如下：{data_parsed}')
             else:
-                Agent.invoke('')
+                agent.invoke('')
         # pass    
     except Exception as e:
         logger.error(f"Error handling Aikanshe done service: {e}")
 def handle_do_agent_invoke(data_parsed):
-    response = Agent.invoke(data_parsed)
+    response = agent.invoke(data_parsed)
     redis_core.publisher(RedisChannel.agent_invoke_done,response)
     pass
 

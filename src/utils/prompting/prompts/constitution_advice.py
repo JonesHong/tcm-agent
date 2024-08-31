@@ -1,7 +1,7 @@
 import __init__
 
 from src.schemas._enum import CommonPrompts, MessageType
-from src.utils.prompting.prompting_service import prompt_service_factory
+from src.utils.prompting.prompt_service_factory import prompt_service_factory
 
 
 user_prompt_prefix = (

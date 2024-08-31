@@ -1,7 +1,7 @@
 import __init__
 from random import randint
 from src.schemas._enum import CommonPrompts, MessageType
-from src.utils.prompting.prompting_service import prompt_service_factory
+from src.utils.prompting.prompt_service_factory import prompt_service_factory
 
 # 定義 user_prompt_prefix
 user_prompt_prefix = (
@@ -67,7 +67,18 @@ def add_radom():
     res = f"{CommonPrompts.combine( CommonPrompts.WORD_LIMIT.format(limit =num),CommonPrompts.LINE_BREAK)}"
     # print(res)
     return res
+
 # 驗證效果
+
+examples = [
+    "Hi~~",
+    "今天天氣如何?",
+    ""
+]
+
+# greeting_agent.test_examples(examples=examples,method="invoke", measure_performance=True)
+
+
 # response_1 = greeting_agent.invoke(f"{add_radom()}Hi~~")
 # print("AI Response:", response_1.content)
 

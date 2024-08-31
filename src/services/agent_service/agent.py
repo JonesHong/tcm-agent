@@ -43,17 +43,17 @@ class AgentClass:
 
     def _get_strategy(self, mode):
         if mode == AgentMode.INITIAL:
-            return InitialStrategy()
+            return InitialStrategy(self)
         elif mode == AgentMode.DIAGNOSTIC:
-            return DiagnosticStrategy()
+            return DiagnosticStrategy(self)
         elif mode == AgentMode.TONGUE_DIAGNOSIS:
-            return TongueDiagnosis()
+            return TongueDiagnosis(self)
         # elif mode == AgentMode.EVALUATION_ADVICE:
-        #     return EvaluationAndAdvice()
+        #     return EvaluationAndAdvice(self)
         elif mode == AgentMode.INQUIRY:
-            return InquiryStrategy()
+            return InquiryStrategy(self)
         elif mode == AgentMode.CHITCHAT:
-            return ChitchatStrategy()
+            return ChitchatStrategy(self)
         else:
             raise ValueError(f"Unsupported mode: {mode}")
 
@@ -118,7 +118,7 @@ class AgentClass:
 
     def invoke(self, user_input):
         # print(4654654646,user_input)
-        return self.__strategy.handle_invoke(self, user_input)
+        return self.__strategy.handle_invoke( user_input)
 
 
-Agent = AgentClass()
+agent = AgentClass()

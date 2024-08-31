@@ -1,7 +1,7 @@
 import __init__
 
 from src.schemas._enum import MessageType
-from src.utils.prompting.prompting_service import prompt_service_factory
+from src.utils.prompting.prompt_service_factory import prompt_service_factory
 
 word_limit = 30
 user_prompt_prefix = f"1. 嘗試理解使用者上下文、語境想表達的內容\n2. 用你自己的話重新闡述，盡可能的語意通順、白話文一點\n3. 最重要的是字數控制在{word_limit}個字以內。\n- - - -\n"

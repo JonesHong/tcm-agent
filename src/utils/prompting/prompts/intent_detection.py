@@ -1,7 +1,7 @@
 import __init__
 
 from src.schemas._enum import Intent, MessageType
-from src.utils.prompting.prompting_service import prompt_service_factory
+from src.utils.prompting.prompt_service_factory import prompt_service_factory
 
 # 将 Enum 选项拆开并拼接成字符串
 intent_options = [intent.value for intent in Intent]
@@ -48,8 +48,9 @@ intent_detection_agent = prompt_service_factory.intent_detection
 
 ## 主要功能
 - 判斷對話中是否提到舌診或舌頭，回應「舌診」。
-- 判斷對話中是否提到體質、問診或十問，回應「中醫十問」。
-- 如果對話中未提及上述內容，回應「其他」。
+- 判斷對話中是否提到問診或十問，回應「中醫十問」。
+- 如果訊息表明對話即將結束（如『再見』、『掰掰』），回應『結束對話』；
+- 如果對話中未提及上述內容，回應「自由提問」。
 """
 
 # 直接通过名称访问并使用服务
@@ -62,4 +63,4 @@ examples = [
     "我一直感覺四肢無力，這有什麼調理建議嗎？",
     "台灣和中國的關係？"
 ]
-intent_detection_agent.test_examples(examples=examples, measure_performance=True)
+# intent_detection_agent.test_examples(examples=examples, measure_performance=True)

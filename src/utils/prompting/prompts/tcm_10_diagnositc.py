@@ -2,7 +2,7 @@ import __init__
 
 from src.services.agent_service.ollama_llm import ollama_llm
 from src.schemas._enum import MessageType
-from src.utils.prompting.prompting_service import prompt_service_factory
+from src.utils.prompting.prompt_service_factory import prompt_service_factory
 from langchain_core.tools import tool
 
 @tool
