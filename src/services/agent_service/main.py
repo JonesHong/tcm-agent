@@ -116,7 +116,8 @@ def handle_vip_event(data_parsed):
                 'male': male
             }
             Agent.sex = data_parsed['data']['gender'].lower()
-            response = Agent.invoke('開始問診。')
+            
+            response = Agent.invoke('你好')
             message = {"text": response}
             redis_core.publisher(RedisChannel.do_tts_service, message)
         elif data_parsed['type'] == 1:

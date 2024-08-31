@@ -4,7 +4,7 @@ from src.schemas._enum import CommonPrompts, MessageType
 from src.utils.prompting.prompting_service import prompt_service_factory
 
 word_limit = 150
-user_prompt_prefix = f"给出中医诊断和处方建议，{CommonPrompts.WORD_LIMIT.format(limit=word_limit)}\n- - - -\n"
+user_prompt_prefix = f"如果使用者對話內容是除了中醫範圍以外的內容，請嘗試糾正、引導他回到中醫範疇；如果是中醫範疇，請给出中医诊断和处方建议，{CommonPrompts.WORD_LIMIT.format(limit=word_limit)}\n- - - -\n"
 prompt_service_factory.create_prompt_service(
     name="tcm_qa",
     user_prompt_prefix=user_prompt_prefix,
@@ -65,22 +65,28 @@ prompt_service_factory.create_prompt_service(
     ],
     # llm=
 )
-
 tcm_qa_agent = prompt_service_factory.tcm_qa
+"""
+## 簡介
+此 `agent` 是一个基于虚拟中医师的对话代理，用于根据用户输入的问题提供中医诊断和治疗建议。
+该代理结合了中医理论，生成具体的诊断、建议或治疗方案，并尽量解释症状背后的中医原理。  
+
+## 主要功能  
+- 中医诊断：根据用户输入的症状，生成中医诊断。  
+- 处方建议：提供相应的中医处方，并附上使用方法。  
+- 健康建议：根据诊断提供日常生活中的保健建议，如饮食、运动等。
+"""
 
 # # 直接通过名称访问并使用服务
-response_1 = tcm_qa_agent.invoke(
-    "李某某，女，15岁。病起于外感，高热（39.5℃ ），头痛，肢体酸楚。至五六日后，突发上腹部疼痛，午后发热更甚，切脉弦紧有力，舌质红绛而苔腻，皮肤亢热，腹部板硬疼痛拒按，大便已七日未解，小便短赤，时发谵语。给出中医诊断和处方建议"
-,measure_performance=True
-)
-print("AI Response:", response_1.content)
+examples = [
+    "李某某，女，15岁。病起于外感，高热（39.5℃ ），头痛，肢体酸楚。至五六日后，突发上腹部疼痛，午后发热更甚，切脉弦紧有力，舌质红绛而苔腻，皮肤亢热，腹部板硬疼痛拒按，大便已七日未解，小便短赤，时发谵语。给出中医诊断和处方建议",
+    "心跳最近總感覺慢一拍，胸口悶痛，大小便正常，最近因工作常熬夜",
+    # "最近經常感覺頭痛，尤其是在壓力大的時候，請問這是什麼原因？",
+    # "我最近食欲不振，吃不下東西，而且常常感到疲倦無力，有什麼調理建議嗎？",
+    # "我經常失眠，特別是夜裡很難入睡，有什麼中醫調理方法可以幫助改善睡眠？",
+    # "我的皮膚最近變得很乾燥，還有點脫皮，這有什麼治療或保養方法嗎？",
+    # "每次月經來的時候都會痛經，這有什麼中醫的治療建議嗎？,
+    "台灣跟中國的關係是什麼?"
+]
 
-response_2 = tcm_qa_agent.invoke(
-    "心跳最近總感覺慢一拍，胸口悶痛，大小便正常，最近因工作常熬夜",measure_performance=True
-)
-print("AI Response:", response_2.content)
-
-response_3 = tcm_qa_agent.invoke(
-    "黄连汤是什麼?有何效用?",measure_performance=True
-)
-print("AI Response:", response_3.content)
+tcm_qa_agent.test_examples(examples=examples,method="invoke", measure_performance=True)

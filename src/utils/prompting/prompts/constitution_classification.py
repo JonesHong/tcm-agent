@@ -69,48 +69,56 @@ prompt_service_factory.create_prompt_service(
 
 
 constitution_classification_agent = prompt_service_factory.constitution_classification
+"""
+## 簡介
+此 `agent` 用於分析對話內容，判斷並列出涉及的中醫體質類型。
 
+## 主要功能
+- 根據對話內容仔細分析體質類型。
+- 驗證內容後，列出所有相關的體質類型。
+- 體質類型包括平和質、氣虛質、陽虛質、陰虛質、痰濕質、濕熱質、血瘀質、氣鬱質和特稟質。
+"""
 
 # 直接通过名称访问并使用服务
 # Example 1: 陽虛質
-response_1 = constitution_classification_agent.invoke("最近天氣變冷，我常常感到寒冷，手腳冰涼，穿得再多也不覺得暖和。")
-print("Example 1 - AI Response:", response_1.content)
-print("Expected Response: 陽虛質\n")
+# response_1 = constitution_classification_agent.invoke("最近天氣變冷，我常常感到寒冷，手腳冰涼，穿得再多也不覺得暖和。")
+# print("Example 1 - AI Response:", response_1.content)
+# print("Expected Response: 陽虛質\n")
 
-# Example 2: 氣虛質
-response_2 = constitution_classification_agent.invoke("我經常感覺疲倦，做事容易氣短，稍微活動就覺得累。")
-print("Example 2 - AI Response:", response_2.content)
-print("Expected Response: 氣虛質\n")
+# # Example 2: 氣虛質
+# response_2 = constitution_classification_agent.invoke("我經常感覺疲倦，做事容易氣短，稍微活動就覺得累。")
+# print("Example 2 - AI Response:", response_2.content)
+# print("Expected Response: 氣虛質\n")
 
-# Example 3: 陰虛質
-response_3 = constitution_classification_agent.invoke("我的皮膚經常感到乾燥，晚上總是口乾舌燥，難以入睡。")
-print("Example 3 - AI Response:", response_3.content)
-print("Expected Response: 陰虛質\n")
+# # Example 3: 陰虛質
+# response_3 = constitution_classification_agent.invoke("我的皮膚經常感到乾燥，晚上總是口乾舌燥，難以入睡。")
+# print("Example 3 - AI Response:", response_3.content)
+# print("Expected Response: 陰虛質\n")
 
-# Example 4: 痰濕質
-response_4 = constitution_classification_agent.invoke("我經常覺得身體沉重，尤其是早上起床時感覺很困倦，容易出現痰多的情況。")
-print("Example 4 - AI Response:", response_4.content)
-print("Expected Response: 痰濕質\n")
+# # Example 4: 痰濕質
+# response_4 = constitution_classification_agent.invoke("我經常覺得身體沉重，尤其是早上起床時感覺很困倦，容易出現痰多的情況。")
+# print("Example 4 - AI Response:", response_4.content)
+# print("Expected Response: 痰濕質\n")
 
-# Example 5: 氣鬱質, 陰虛質
-response_5 = constitution_classification_agent.invoke("我最近經常感到胸悶，情緒低落，有時會口乾舌燥。")
-print("Example 5 - AI Response:", response_5.content)
-print("Expected Response: 氣鬱質, 陰虛質\n")
+# # Example 5: 氣鬱質, 陰虛質
+# response_5 = constitution_classification_agent.invoke("我最近經常感到胸悶，情緒低落，有時會口乾舌燥。")
+# print("Example 5 - AI Response:", response_5.content)
+# print("Expected Response: 氣鬱質, 陰虛質\n")
 
-# Example 6: 特稟質
-response_6 = constitution_classification_agent.invoke("我的皮膚非常敏感，經常過敏，換季的時候症狀更明顯。")
-print("Example 6 - AI Response:", response_6.content)
-print("Expected Response: 特稟質\n")
+# # Example 6: 特稟質
+# response_6 = constitution_classification_agent.invoke("我的皮膚非常敏感，經常過敏，換季的時候症狀更明顯。")
+# print("Example 6 - AI Response:", response_6.content)
+# print("Expected Response: 特稟質\n")
 
-# Example 7: 血瘀質
-response_7 = constitution_classification_agent.invoke("我經常感到手腳冰涼，皮膚上有時候會出現紫色的瘀斑。")
-print("Example 7 - AI Response:", response_7.content)
-print("Expected Response: 血瘀質\n")
+# # Example 7: 血瘀質
+# response_7 = constitution_classification_agent.invoke("我經常感到手腳冰涼，皮膚上有時候會出現紫色的瘀斑。")
+# print("Example 7 - AI Response:", response_7.content)
+# print("Expected Response: 血瘀質\n")
 
-# Example 8: 平和質
-response_8 = constitution_classification_agent.invoke("我平時身體狀況良好，精力充沛，很少生病。")
-print("Example 8 - AI Response:", response_8.content)
-print("Expected Response: 平和質\n")
+# # Example 8: 平和質
+# response_8 = constitution_classification_agent.invoke("我平時身體狀況良好，精力充沛，很少生病。")
+# print("Example 8 - AI Response:", response_8.content)
+# print("Expected Response: 平和質\n")
 
 
 

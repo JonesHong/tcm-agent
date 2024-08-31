@@ -29,15 +29,23 @@ prompt_service_factory.create_prompt_service(
 )
 
 simplify_sentence_flow_agent = prompt_service_factory.simplify_sentence_flow
+"""
+## 簡介
+此 `agent` 用於將使用者的句子在理解上下文後，濃縮成不超過30字的通順、白話文表述。
 
+## 主要功能
+- 理解並總結使用者句子的核心內容。
+- 使用簡單的語言重新闡述內容。
+- 控制摘要字數在30字以內。
+"""
 # # 直接通过名称访问并使用服务
-response_1 = simplify_sentence_flow_agent.invoke("問寒熱問飲食問聾")
-print("AI Response:", response_1.content)
+# response_1 = simplify_sentence_flow_agent.invoke("問寒熱問飲食問聾")
+# print("AI Response:", response_1.content)
 
-message_2 = "欲速則不達，見小利則大事不成"
-response_2 = simplify_sentence_flow_agent.invoke(message_2)
-print("AI Response:", response_2.content)
+# message_2 = "欲速則不達，見小利則大事不成"
+# response_2 = simplify_sentence_flow_agent.invoke(message_2)
+# print("AI Response:", response_2.content)
 
-message_3 = "你覺得最近身體偏冷還是偏熱？有發燒或怕冷的情況嗎？這些症狀在一天中是否有變化？你有沒有感覺胸悶、心悸或腹部不適？是否有腹脹、腹痛或噯氣的情況？小便顏色正常嗎？最近有頻尿或尿量減少的情況嗎？一天大概上幾次廁所？"
-response_3 = simplify_sentence_flow_agent.invoke(message_3)
-print("AI Response:", response_3.content)
+# message_3 = "你覺得最近身體偏冷還是偏熱？有發燒或怕冷的情況嗎？這些症狀在一天中是否有變化？你有沒有感覺胸悶、心悸或腹部不適？是否有腹脹、腹痛或噯氣的情況？小便顏色正常嗎？最近有頻尿或尿量減少的情況嗎？一天大概上幾次廁所？"
+# response_3 = simplify_sentence_flow_agent.invoke(message_3)
+# print("AI Response:", response_3.content)

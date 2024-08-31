@@ -41,6 +41,7 @@ pydantic==2.7.1
 loguru
 python-multipart
 
+reactivex
 langchain
 langchain-community
 langchainhub

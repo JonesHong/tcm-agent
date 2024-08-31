@@ -3,7 +3,7 @@ from typing import Literal
 from reactivex.subject.behaviorsubject import BehaviorSubject
 
 from src.schemas._enum import AgentMode,InterrogationDetails,QaList
-from src.services.agent_service.strategy import ChitchatStrategy, DiagnosticStrategy, EvaluationAndAdvice, InquiryStrategy, TongueDiagnosis
+from src.services.agent_service.strategy import ChitchatStrategy, DiagnosticStrategy, EvaluationAndAdvice, InitialStrategy, InquiryStrategy, TongueDiagnosis
 from src.utils.config.manager import ConfigManager
 from src.utils.decorators.singleton import singleton
 from src.utils.log import logger
@@ -35,16 +35,21 @@ class AgentClass:
         self.__questions = {}
         self.__answers = {}
         self.question_count = 0
-        self.mode = AgentMode[agent_config.mode]
+        self.mode = AgentMode.INITIAL
+        self.__diagnostic_result = None
+        self.__tongue_diagnosis_result = None
+        # self.mode = AgentMode[agent_config.mode]
         self.transformed_data = {"age": None, "male": None}
 
     def _get_strategy(self, mode):
-        if mode == AgentMode.DIAGNOSTIC:
+        if mode == AgentMode.INITIAL:
+            return InitialStrategy()
+        elif mode == AgentMode.DIAGNOSTIC:
             return DiagnosticStrategy()
         elif mode == AgentMode.TONGUE_DIAGNOSIS:
             return TongueDiagnosis()
-        elif mode == AgentMode.EVALUATION_ADVICE:
-            return EvaluationAndAdvice()
+        # elif mode == AgentMode.EVALUATION_ADVICE:
+        #     return EvaluationAndAdvice()
         elif mode == AgentMode.INQUIRY:
             return InquiryStrategy()
         elif mode == AgentMode.CHITCHAT:
@@ -113,7 +118,7 @@ class AgentClass:
 
     def invoke(self, user_input):
         # print(4654654646,user_input)
-        return self.__strategy.handle_interaction(self, user_input)
+        return self.__strategy.handle_invoke(self, user_input)
 
 
 Agent = AgentClass()

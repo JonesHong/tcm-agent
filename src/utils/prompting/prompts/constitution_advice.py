@@ -97,18 +97,25 @@ prompt_service_factory.create_prompt_service(
 )
 
 constitution_advice_agent = prompt_service_factory.constitution_advice
+"""
+## 簡介
+此 `agent` 用於根據使用者提供的體質信息，提供適合的飲食和生活建議。
 
+## 主要功能
+- 分析使用者提供的體質類型，綜合評估後給出建議。
+- 提供每種體質的飲食和生活建議，包括平和質、氣虛質、陽虛質、陰虛質、痰濕質、濕熱質、血瘀質、氣鬱質和特稟質。
+"""
 
 # 直接通过名称访问并使用服务
 # Example 1: 陽虛質
-response_1 = constitution_advice_agent.invoke("我的體質是陽虛質。",measure_performance=True)
-print("Example 1 - AI Response:", response_1.content)
-print("Expected Response: 怕冷、手腳冰涼。建議食用溫熱食材如薑、龍眼等，避免生冷寒涼食物及冰品。\n")
+# response_1 = constitution_advice_agent.invoke("我的體質是陽虛質。",measure_performance=True)
+# print("Example 1 - AI Response:", response_1.content)
+# print("Expected Response: 怕冷、手腳冰涼。建議食用溫熱食材如薑、龍眼等，避免生冷寒涼食物及冰品。\n")
 
-# Example 2: 氣虛質, 陽虛質
-response_2 = constitution_advice_agent.invoke("我的體質是氣虛質和陽虛質。")
-print("Example 2 - AI Response:", response_2.content)
-print("Expected Response: 易疲乏、多汗，怕冷、手腳冰涼。建議食用益氣健脾的食物如山藥、黃耆，並搭配溫熱食材如薑、龍眼。避免生冷寒涼食物及冰品，減少耗氣食物如白蘿蔔、柚子。\n")
+# # Example 2: 氣虛質, 陽虛質
+# response_2 = constitution_advice_agent.invoke("我的體質是氣虛質和陽虛質。")
+# print("Example 2 - AI Response:", response_2.content)
+# print("Expected Response: 易疲乏、多汗，怕冷、手腳冰涼。建議食用益氣健脾的食物如山藥、黃耆，並搭配溫熱食材如薑、龍眼。避免生冷寒涼食物及冰品，減少耗氣食物如白蘿蔔、柚子。\n")
 
 # # Example 3: 陰虛質, 濕熱質
 # response_3 = constitution_advice_agent.invoke("我的體質是陰虛質和濕熱質。")

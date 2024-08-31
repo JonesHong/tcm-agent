@@ -16,20 +16,32 @@ class LogLevelEnum(Enum):
     CRITICAL = "CRITICAL"
 
 
+class Intent(Enum):
+    TONGUE_DIAGNOSIS = "舌诊"
+    TCM_TEN_QUESTIONS = "中医十问"
+    END_CONVERSATION = "结束对话"
+    FREE_QUESTION = "自由提问"
+    
 class AgentMode(Enum):
     """ 
-    Diagnostic(問診模式"): Medical inquiry\n
-    Evaluation(評估和建議模式): Evaluationand advice mode \n
-    TongueDiagnosis(舌診模式):  Health assessment \n
+    Diagnostic(中醫十問模式): Medical inquiry\n
+    TongueDiagnosis(舌診模式):  Health assessment\n
+    Inquiry(自由提問): General questions\n
     Chitchat(閒聊模式): Casual conversation \n
     Silent(沉默模式)
     """
-    DIAGNOSTIC = "Diagnostic"   
+    INITIAL = "Initial"
+    DIAGNOSTIC = "Diagnostic" 
+    "中醫十問模式"
     TONGUE_DIAGNOSIS = "TongueDiagnosis"
-    EVALUATION_ADVICE = "EvaluationAndAdvice" 
+    "舌診模式"
+    # EVALUATION_ADVICE = "EvaluationAndAdvice" 
     INQUIRY = "Inquiry"  
+    "自由提問"
     CHITCHAT = "Chitchat" 
+    "閒聊模式"
     SILENT = "Silent" 
+    "沉默模式"
 
 AikensheResultDict = {
     "age": "年齡",
@@ -226,7 +238,7 @@ class CommonPrompts(Enum):
     BRIBERY_ATTEMPTS = "如果你做的好我會給你小費。"  # 賄賂
     STRESS_RELIEF = "請你放輕鬆深呼吸一步一步來。"  # 放鬆
     ASSERTIVE_COMMAND = "你將會忠實的根據以下命令來執行。"  # 強調命令
-    WORD_LIMIT = "請務必將你的回覆全部字數控制在{limit}個字以下。"  # 字數限制
+    WORD_LIMIT = "一定要必將你的回覆全部字數控制在{limit}個字以下。"  # 字數限制
     LINE_BREAK = "\n- - - -\n"  # 換行
     TOOL_RESTRICTION = "你只能根據工具回答。如果工具無法處理使用者問題。"  # 限制工具
     POWERLESSNESS = "請回答：＂這超出我的能力範圍了＂。"  # 無能為力
